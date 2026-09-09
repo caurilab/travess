@@ -160,6 +160,43 @@
 - **7.1+** — projections bornées du dossier, flux d'assignation/invitation, onboarding (lien signé + OTP), annuaire opt-in, bascule de posture auditée.
 - **7.5 — Mobile Money** (sous-lot terminal).
 
+## Avancement — Lot 7.2a (Onboarding portail)
+
+> Terminé et audité. Met en œuvre ADR-013 côté onboarding (aucun ADR nouveau : le cadre reste ADR-013). Adaptateurs factices par défaut : le flux est exerçable de bout en bout sans fournisseur réel. Audit sécurité passé (GO conditionnel, 3 majeurs corrigés).
+
+**Flux couvert :** émission (transitaire) → réclamation publique (OTP) → confirmation (provisionnement du compte client + activation de l'accès).
+- **Émission** : le transitaire émet une invitation liée au dossier partagé ; lien signé à expiration.
+- **Réclamation publique** : le destinataire ouvre le lien et valide par **OTP** (canal d'arrivée).
+- **Confirmation** : à la validation, provisionnement du compte client (tenant `type=client`) et activation de l'accès `acces_dossier`.
+
+**Domaine Messagerie (principe n°9) :**
+- Contrats isolés `ExpediteurMessage` et `ServiceOtp`, adaptateurs factices `ExpediteurFactice` / `ServiceOtpFactice` (déterministes, sans réseau).
+- `config/messagerie.php` : **driver factice par défaut** ; le fournisseur réel est branché derrière les interfaces sans toucher au métier.
+
+**Décisions produit actées :**
+- **Identité du compte client = téléphone (E.164) + OTP** ; email facultatif.
+- **Non-cumul strict** : un numéro déjà associé à un compte non-client entraîne un **refus 409** (jamais de fusion ni de bascule de posture).
+
+**Sécurité :**
+- Token d'invitation **256 bits, haché au repos** (jamais stocké en clair), transporté par **lien signé**.
+- **RLS `invitation_portail` bornée au token** via le GUC `app.invitation_token_hash` (posé côté serveur, jamais par le client).
+- **OTP à usage unique** lié à l'invitation : tentatives persistées, verrou, plafonds d'émission.
+- **Provisionnement sous `runBypassed` borné et audité** (opération transverse système, tracée).
+- **Charge du job chiffrée**.
+- **Reset fail-closed des GUC** sur le chemin public (aucun contexte résiduel ne fuit d'une requête à l'autre).
+
+**Vérification :** 160 tests verts, Pint + Larastan à 0. Audit sécurité passé (GO conditionnel : 3 majeurs corrigés).
+
+## Dette technique / à sécuriser avant prod (Lot 7 — onboarding & providers)
+
+- **Providers réels à brancher derrière les interfaces (7.2b+)**, tant qu'ils ne le sont pas les canaux `whatsapp`/`sms` restent en **factice/différé** :
+  - **Email transactionnel réel** : SPF/DKIM/DMARC sur `travess.ci`.
+  - **WhatsApp Business API** : numéro vérifié, templates validés, modèle de coût, rétention Meta.
+  - **Fournisseur SMS/OTP** : sender ID compatible BCEAO, protection anti SMS-pumping, plafond de dépense.
+- **Note d'audit m1 (ops)** : le token voyage dans le **chemin de l'URL signée** — garantir côté exploitation que ce chemin **n'est pas journalisé** (logs proxy/serveur) et **pas de fuite via `Referer`**. Risque mitigé par OTP + usage unique + TTL 72 h.
+- **Note d'audit m4 (UX)** : l'OTP est **consommé avant la fin du provisionnement** ; un échec tardif (ex. refus 409 de non-cumul) oblige à **re-réclamer**.
+- **Point de contrôle sécurité à rouvrir avant / à 7.2b** (branchement des providers réels) : ré-auditer le chemin d'onboarding avec les fournisseurs réels en place.
+
 ## Questions ouvertes
 
 - Table de correspondance précise `container_status` → statut Travess (à établir sur données réelles).
@@ -168,6 +205,7 @@
 
 ## Journal
 
+- **2026-09-10** — **Lot 7.2a complet** (Onboarding portail) : flux émission (transitaire) → réclamation publique (OTP) → confirmation (provisionnement du compte client `type=client` + activation de l'accès). Domaine Messagerie isolé derrière `ExpediteurMessage`/`ServiceOtp` (principe n°9), adaptateurs factices par défaut (`config/messagerie.php`) rendant le flux exerçable de bout en bout sans fournisseur réel. Décisions produit actées : identité du compte client = téléphone (E.164) + OTP (email facultatif), non-cumul strict (numéro déjà pris par un compte non-client → 409). Sécurité : token d'invitation 256 bits haché au repos, lien signé, RLS `invitation_portail` bornée au token (GUC `app.invitation_token_hash`), OTP à usage unique avec tentatives/verrou/plafonds, provisionnement sous `runBypassed` borné et audité, charge de job chiffrée, reset fail-closed des GUC sur le chemin public. 160 tests verts, Pint + Larastan 0. Audit sécurité passé (GO conditionnel : 3 majeurs corrigés). Met en œuvre ADR-013 (pas de nouvel ADR). Dette consignée : providers réels (email/WhatsApp/SMS-OTP) à brancher en 7.2b+, notes d'audit m1 (token dans l'URL — non-journalisation côté ops) et m4 (OTP consommé avant fin de provisionnement), point de contrôle sécurité à rouvrir à 7.2b.
 - **2026-09-10** — **Lot 7 — modèle d'accès du portail conçu et validé** (arbitrage produit) : compte client = tenant `type=client` ; partage inter-tenant borné en lecture via `acces_dossier` + politique RLS `FOR SELECT` *grant-aware* (GUC `app.portail_user_id`) ; trois niveaux d'accès (`limite`/`etendu`/`gestion`) ; posture du dossier `autonome`/`gere_par_transitaire` avec migration de propriété auditée. Trois décisions produit actées : bascule stricte BL+parcours à la reprise par un transitaire, annuaire des transitaires en opt-in, Mobile Money découplé en sous-lot 7.5. Découpage 7.0 → 7.5, 7.0 (fondations du modèle d'accès) à auditer avant la suite. ADR-013 (amende ADR-004).
 - **2026-09-10** — **Lot 5 complet** (Ingestion documentaire par IA) : contrat `ExtracteurDocument` avec adaptateurs factice (défaut, sans clé) et Claude via `laravel/ai`, DTO neutres et schémas paramétrables, pipeline en file (`LancerExtraction` → `ExtraireDocument` → `ValiderExtraction`) avec réservation atomique du quota et application au dossier sous validation humaine, décompte de consommation tenant-scopé, endpoints d'extraction/validation. Testable de bout en bout sans clé API. 136 tests PHP verts, Pint + Larastan niveau 5 à 0. Audit sécurité, revue et testeur passés. ADR-012.
 - **2026-09-08** — Cadrage produit complet, choix de stack figés, documentation initiale rédigée, arborescence monorepo posée.

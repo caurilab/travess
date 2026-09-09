@@ -21,7 +21,10 @@ class FortifyServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // API pure : on n'utilise pas les routes de session de Fortify, seulement
+        // ses services (2FA TOTP, réinitialisation de mot de passe). L'auth par
+        // jeton passe par nos propres endpoints /api/v1/auth/* (domaine Identity).
+        Fortify::ignoreRoutes();
     }
 
     /**
@@ -36,9 +39,14 @@ class FortifyServiceProvider extends ServiceProvider
         Fortify::redirectUserForTwoFactorAuthenticationUsing(RedirectIfTwoFactorAuthenticatable::class);
 
         RateLimiter::for('login', function (Request $request) {
-            $throttleKey = Str::transliterate(Str::lower($request->input(Fortify::username())).'|'.$request->ip());
+            $parEmail = Str::transliterate(Str::lower((string) $request->input(Fortify::username())).'|'.$request->ip());
 
-            return Limit::perMinute(5)->by($throttleKey);
+            // Deux plafonds cumulés : par (email+IP) contre le bourrage ciblé,
+            // et par IP seule contre le credential stuffing multi-comptes (M-4).
+            return [
+                Limit::perMinute(5)->by($parEmail),
+                Limit::perMinute(20)->by((string) $request->ip()),
+            ];
         });
 
         RateLimiter::for('two-factor', function (Request $request) {

@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Domains\Identity\Models\User;
+use App\Domains\Identity\Policies\UserPolicy;
 use App\Shared\Context\TenantContext;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -26,6 +29,8 @@ final class DomainServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        //
+        // Policies (les modèles vivant hors de App\Models, l'auto-découverte ne
+        // s'applique pas : on les enregistre explicitement).
+        Gate::policy(User::class, UserPolicy::class);
     }
 }

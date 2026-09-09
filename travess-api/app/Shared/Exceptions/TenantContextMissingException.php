@@ -35,4 +35,13 @@ final class TenantContextMissingException extends RuntimeException
             .'Le tenant_id est déduit du contexte, jamais fourni par le client.'
         );
     }
+
+    public static function forOperation(): self
+    {
+        return new self(
+            'Aucun contexte tenant établi pour cette opération. '
+            .'Établir le contexte via le middleware EnsureTenantContext (requête '
+            .'HTTP) ou explicitement (job, commande) au préalable.'
+        );
+    }
 }

@@ -131,7 +131,7 @@ return [
     |
     */
 
-    'views' => true,
+    'views' => false,
 
     /*
     |--------------------------------------------------------------------------
@@ -161,19 +161,15 @@ return [
     |
     */
 
+    // API pure : on n'utilise pas les routes Fortify (cf. Fortify::ignoreRoutes()).
+    // Seuls les services activés ici comptent. Le 2FA TOTP est confirmé par code ;
+    // la confirmation par mot de passe est désactivée (flux jeton, pas de session).
+    // Les passkeys (WebAuthn) et l'inscription libre sont hors périmètre du Lot 0.
     'features' => [
-        Features::registration(),
         Features::resetPasswords(),
-        // Features::emailVerification(),
-        Features::updateProfileInformation(),
-        Features::updatePasswords(),
         Features::twoFactorAuthentication([
             'confirm' => true,
-            'confirmPassword' => true,
-            // 'window' => 0,
-        ]),
-        Features::passkeys([
-            'confirmPassword' => true,
+            'confirmPassword' => false,
         ]),
     ],
 

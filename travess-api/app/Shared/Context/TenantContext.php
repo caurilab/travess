@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Shared\Context;
 
+use App\Shared\Exceptions\TenantContextMissingException;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -37,6 +38,18 @@ final class TenantContext
     public function hasTenant(): bool
     {
         return $this->tenantId !== null;
+    }
+
+    /**
+     * Renvoie le tenant courant ou échoue si aucun n'est établi (fail-closed).
+     */
+    public function idOrFail(): string
+    {
+        if ($this->tenantId === null) {
+            throw TenantContextMissingException::forOperation();
+        }
+
+        return $this->tenantId;
     }
 
     public function set(string $tenantId): void

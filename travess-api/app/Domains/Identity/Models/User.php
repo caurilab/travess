@@ -6,6 +6,7 @@ namespace App\Domains\Identity\Models;
 
 use App\Domains\Identity\Enums\RoleUtilisateur;
 use App\Domains\Tenancy\Models\Tenant;
+use App\Shared\Context\TenantContext;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -82,6 +83,28 @@ final class User extends Authenticatable
     public function scopeForTenant(Builder $query, string $tenantId): Builder
     {
         return $query->where('tenant_id', $tenantId);
+    }
+
+    /**
+     * Route-model binding scopé : en présence d'un contexte tenant, un {user}
+     * d'un autre tenant est introuvable (404), ce qui neutralise l'IDOR
+     * inter-tenant malgré l'absence d'auto-scope sur User.
+     */
+    public function resolveRouteBinding($value, $field = null): ?self
+    {
+        $query = self::query()->where($field ?? $this->getRouteKeyName(), $value);
+
+        // La résolution du binding peut précéder le middleware tenant : on se
+        // rabat sur le tenant de l'utilisateur authentifié (déjà résolu à ce stade).
+        $tenantId = app(TenantContext::class)->id() ?? auth()->user()?->tenant_id;
+
+        // Fail-closed : sans tenant résoluble, aucune cible (jamais de résolution
+        // globale par id, qui traverserait les tenants).
+        if ($tenantId === null) {
+            return null;
+        }
+
+        return $query->where('tenant_id', $tenantId)->first();
     }
 
     protected static function newFactory(): Factory

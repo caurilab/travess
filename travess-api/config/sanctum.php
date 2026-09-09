@@ -50,7 +50,10 @@ return [
     |
     */
 
-    'expiration' => null,
+    // Expiration des jetons en minutes (défaut : 1 jour). Un jeton fuité ne
+    // reste pas valide indéfiniment ; les clients tournent via /auth/refresh.
+    // Purger les jetons expirés via la commande sanctum:prune-expired.
+    'expiration' => (int) env('SANCTUM_EXPIRATION', 60 * 24),
 
     /*
     |--------------------------------------------------------------------------

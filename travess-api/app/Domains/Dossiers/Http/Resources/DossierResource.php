@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domains\Dossiers\Http\Resources;
 
+use App\Domains\Conteneurs\Http\Resources\BlResource;
+use App\Domains\Documents\Http\Resources\DocumentResource;
 use App\Domains\Dossiers\Models\Dossier;
 use App\Domains\Identity\Http\Resources\UserResource;
 use App\Domains\Tenancy\Http\Resources\ClientResource;
@@ -37,6 +39,8 @@ final class DossierResource extends JsonResource
             'client' => new ClientResource($this->whenLoaded('client')),
             'etapes' => EtapeResource::collection($this->whenLoaded('etapes')),
             'agents' => UserResource::collection($this->whenLoaded('agents')),
+            'bls' => BlResource::collection($this->whenLoaded('bls')),
+            'documents' => DocumentResource::collection($this->whenLoaded('documents')),
 
             // Résumés à forme figée (remplis aux lots ultérieurs), présents dès
             // que le détail est chargé (étapes chargées = vue détail).

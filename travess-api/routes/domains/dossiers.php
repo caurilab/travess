@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Domains\Dossiers\Http\Controllers\DossierController;
+use App\Domains\Dossiers\Http\Controllers\EtapeController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -17,4 +18,8 @@ Route::middleware(['auth:sanctum', 'tenant'])->group(function (): void {
     Route::post('dossiers/{dossier}/cloturer', [DossierController::class, 'cloturer']);
     Route::put('dossiers/{dossier}/agents', [DossierController::class, 'assigner']);
     Route::get('dossiers/{dossier}/audit', [DossierController::class, 'audit']);
+
+    // Étapes (docs/10 §4)
+    Route::post('dossiers/{dossier}/etapes/reordonner', [EtapeController::class, 'reordonner']);
+    Route::patch('etapes/{etape}', [EtapeController::class, 'update']);
 });

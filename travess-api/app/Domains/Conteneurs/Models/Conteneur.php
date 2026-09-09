@@ -11,6 +11,7 @@ use App\Shared\Concerns\BelongsToTenant;
 use App\Shared\Models\BaseModel;
 use Database\Factories\ConteneurFactory;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * Conteneur rattaché à un connaissement.
@@ -46,6 +47,14 @@ final class Conteneur extends BaseModel
             'statut' => StatutConteneur::class,
             'source_numero' => SourceNumeroConteneur::class,
         ];
+    }
+
+    /**
+     * @return BelongsTo<Bl, $this>
+     */
+    public function bl(): BelongsTo
+    {
+        return $this->belongsTo(Bl::class);
     }
 
     protected static function newFactory(): Factory

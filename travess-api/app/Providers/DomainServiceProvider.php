@@ -4,8 +4,16 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Domains\Conteneurs\Models\Bl;
+use App\Domains\Conteneurs\Models\Conteneur;
+use App\Domains\Conteneurs\Policies\BlPolicy;
+use App\Domains\Conteneurs\Policies\ConteneurPolicy;
+use App\Domains\Documents\Models\Document;
+use App\Domains\Documents\Policies\DocumentPolicy;
 use App\Domains\Dossiers\Models\Dossier;
+use App\Domains\Dossiers\Models\Etape;
 use App\Domains\Dossiers\Policies\DossierPolicy;
+use App\Domains\Dossiers\Policies\EtapePolicy;
 use App\Domains\Identity\Models\User;
 use App\Domains\Identity\Policies\UserPolicy;
 use App\Shared\Context\TenantContext;
@@ -35,5 +43,9 @@ final class DomainServiceProvider extends ServiceProvider
         // s'applique pas : on les enregistre explicitement).
         Gate::policy(User::class, UserPolicy::class);
         Gate::policy(Dossier::class, DossierPolicy::class);
+        Gate::policy(Etape::class, EtapePolicy::class);
+        Gate::policy(Bl::class, BlPolicy::class);
+        Gate::policy(Conteneur::class, ConteneurPolicy::class);
+        Gate::policy(Document::class, DocumentPolicy::class);
     }
 }

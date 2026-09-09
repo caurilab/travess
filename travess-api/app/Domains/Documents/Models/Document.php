@@ -22,6 +22,9 @@ use Illuminate\Database\Eloquent\Factories\Factory;
  * @property string $chemin_stockage
  * @property OrigineDocument $origine
  * @property StatutIngestion $statut_ingestion
+ * @property string|null $nom_original
+ * @property string|null $mime
+ * @property int|null $taille
  */
 final class Document extends BaseModel
 {
@@ -33,6 +36,9 @@ final class Document extends BaseModel
         'chemin_stockage',
         'origine',
         'statut_ingestion',
+        'nom_original',
+        'mime',
+        'taille',
     ];
 
     protected function casts(): array
@@ -41,6 +47,7 @@ final class Document extends BaseModel
             'type' => TypeDocument::class,
             'origine' => OrigineDocument::class,
             'statut_ingestion' => StatutIngestion::class,
+            'taille' => 'integer',
         ];
     }
 

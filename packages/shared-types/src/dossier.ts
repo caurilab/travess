@@ -1,4 +1,6 @@
 import type { ClientDTO } from './client.js';
+import type { BlDTO } from './conteneur.js';
+import type { DocumentDTO } from './document.js';
 import type { SensDossier, StatutDossier, StatutEtape } from './enums.js';
 import type { UtilisateurDTO } from './auth.js';
 
@@ -41,6 +43,8 @@ export interface DossierDTO {
   readonly client?: ClientDTO;
   readonly etapes?: readonly EtapeDTO[];
   readonly agents?: readonly UtilisateurDTO[];
+  readonly bls?: readonly BlDTO[];
+  readonly documents?: readonly DocumentDTO[];
   readonly finances?: FinancesResumeDTO;
   readonly transport?: null;
 }

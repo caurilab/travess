@@ -23,13 +23,15 @@ POST   /auth/refresh
 
 ## 3. Dossiers
 ```
-GET    /dossiers              → liste filtrable (sens, statut, client, agent, échéance, alerte)
-POST   /dossiers              → créer (option: from_bl, from_document)
-GET    /dossiers/{id}         → détail complet (étapes, conteneurs, doc, finances, transport)
-PATCH  /dossiers/{id}         → éditer (statut, motif_blocage, assignation)
+GET    /dossiers              → liste filtrable (sens, statut, client, agent[, échéance, alerte*])
+POST   /dossiers              → créer (référence auto ; options from_bl/from_document* différées)
+GET    /dossiers/{id}         → détail complet (étapes, conteneurs, doc, finances*, transport*)
+PATCH  /dossiers/{id}         → éditer (statut hors clôture, motif_blocage)
+PUT    /dossiers/{id}/agents  → (ré)assigner les agents (endpoint dédié)
 POST   /dossiers/{id}/cloturer
-GET    /dossiers/{id}/audit   → journal
+GET    /dossiers/{id}/audit   → journal (pagination curseur)
 ```
+> Implémenté au Lot 1. `*` = différé : filtres `échéance`/`alerte` (Lot 2), `from_bl` (Lot 4), `from_document` (Lot 5), résumés `finances` (Lot 3) / `transport` (Lot 4+) — clés présentes à forme figée. L'assignation est un endpoint dédié `PUT /agents` plutôt que via `PATCH`.
 
 ## 4. Étapes
 ```
@@ -74,12 +76,14 @@ PATCH  /alertes/preferences
 ## 9. Documents & ingestion IA
 ```
 POST   /documents                          → upload (web) — multipart
-POST   /documents/photo                    → dépôt photo (mobile)
-GET    /documents/{id}
-POST   /documents/{id}/extraire            → met en file l'extraction IA
-GET    /documents/{id}/extraction          → statut + champs {valeur, confiance, zone_source}
-POST   /documents/{id}/valider-extraction  → applique au dossier (écriture APRÈS validation)
+GET    /documents/{id}                      → métadonnées
+GET    /documents/{id}/telecharger          → téléchargement du fichier
+POST   /documents/photo                    → dépôt photo (mobile) — Lot 6
+POST   /documents/{id}/extraire            → met en file l'extraction IA — Lot 5
+GET    /documents/{id}/extraction          → statut + champs {valeur, confiance, zone_source} — Lot 5
+POST   /documents/{id}/valider-extraction  → applique au dossier (écriture APRÈS validation) — Lot 5
 ```
+> Lot 1 : dépôt, consultation, téléchargement (stockage objet). L'ingestion IA (extraction/validation) est le Lot 5, le dépôt photo mobile le Lot 6.
 
 ## 10. Finances
 ```

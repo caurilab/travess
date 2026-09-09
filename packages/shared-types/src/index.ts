@@ -11,4 +11,6 @@ export * from './tenant.js';
 export * from './auth.js';
 export * from './client.js';
 export * from './dossier.js';
+export * from './conteneur.js';
+export * from './document.js';
 export * from './audit.js';

@@ -1,0 +1,21 @@
+{
+  "name": "travess",
+  "private": true,
+  "packageManager": "pnpm@11.25.0",
+  "workspaces": [
+    "travess-web",
+    "travess-mobile",
+    "travess-desktop",
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "typecheck": "turbo run typecheck"
+  },
+  "devDependencies": {
+    "turbo": "^2"
+  }
+}

@@ -1,0 +1,53 @@
+services:
+  api:
+    build: ./travess-api
+    volumes:
+      - ./travess-api:/var/www/html
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+      - redis
+    env_file:
+      - .env
+
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: ${DB_DATABASE:-travess}
+      POSTGRES_USER: ${DB_USERNAME:-travess}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-secret}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+
+  worker:
+    build: ./travess-api
+    command: php artisan queue:work --tries=3
+    volumes:
+      - ./travess-api:/var/www/html
+    depends_on:
+      - postgres
+      - redis
+    env_file:
+      - .env
+
+  scheduler:
+    build: ./travess-api
+    command: php artisan schedule:work
+    volumes:
+      - ./travess-api:/var/www/html
+    depends_on:
+      - postgres
+      - redis
+    env_file:
+      - .env
+
+volumes:
+  pgdata:

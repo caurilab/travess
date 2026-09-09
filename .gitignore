@@ -1,0 +1,39 @@
+# Environnement
+.env
+.env.*
+!.env.example
+
+# Dépendances
+node_modules/
+vendor/
+.pnpm-store/
+
+# Build
+dist/
+build/
+out/
+.next/
+.turbo/
+*.tsbuildinfo
+
+# Laravel
+travess-api/storage/*.key
+travess-api/storage/logs/
+travess-api/bootstrap/cache/
+travess-api/public/storage
+
+# Electron
+travess-desktop/release/
+travess-desktop/*.sqlite
+
+# Mobile
+travess-mobile/.expo/
+travess-mobile/android/app/build/
+travess-mobile/ios/build/
+
+# Divers
+.DS_Store
+*.log
+coverage/
+.idea/
+.vscode/

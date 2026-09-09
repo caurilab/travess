@@ -1,0 +1,9 @@
+packages:
+  - "travess-web"
+  - "travess-mobile"
+  - "travess-desktop"
+  - "packages/*"
+
+# Autorise esbuild (utilisé par tsup/vitest) à exécuter son script de build.
+onlyBuiltDependencies:
+  - esbuild

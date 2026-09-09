@@ -1,0 +1,37 @@
+{
+  "description": "Vecteurs de test ISO 6346 (numéro de conteneur). Source UNIQUE de vérité consommée à la fois par le port TypeScript (packages/shared-core) et le port PHP (travess-api, domaine Conteneurs). Toute divergence entre les deux implémentations doit casser la CI. Format d'un numéro : 3 lettres (code propriétaire) + 1 lettre de catégorie (U, J ou Z) + 6 chiffres (série) + 1 chiffre de contrôle. La validation attend une forme canonique en majuscules, sans espace.",
+  "valides": [
+    "CSQU3054383",
+    "MSCU7390252",
+    "MAEU6123458",
+    "TGHU8563203",
+    "HLXU1234561",
+    "CMAU2000004",
+    "APLU9999992",
+    "ONEU1000001"
+  ],
+  "invalides": [
+    { "numero": "CSQU3054384", "raison": "chiffre de contrôle incorrect" },
+    { "numero": "MSCU7390253", "raison": "chiffre de contrôle incorrect" },
+    { "numero": "MAEU6123459", "raison": "chiffre de contrôle incorrect" },
+    { "numero": "TGHU8563204", "raison": "chiffre de contrôle incorrect" },
+    { "numero": "csqu3054383", "raison": "minuscules (forme non canonique)" },
+    { "numero": "CSQU 3054383", "raison": "contient un espace" },
+    { "numero": "CSQU305438", "raison": "trop court (10 caractères)" },
+    { "numero": "CSQU30543833", "raison": "trop long (12 caractères)" },
+    { "numero": "CSQA3054383", "raison": "catégorie invalide (4e lettre doit être U, J ou Z)" },
+    { "numero": "C5QU3054383", "raison": "chiffre dans le code propriétaire" },
+    { "numero": "CSQU30A4383", "raison": "lettre dans la partie numérique" },
+    { "numero": "", "raison": "chaîne vide" }
+  ],
+  "chiffres_de_controle": [
+    { "prefixe": "CSQU305438", "attendu": 3 },
+    { "prefixe": "MSCU739025", "attendu": 2 },
+    { "prefixe": "MAEU612345", "attendu": 8 },
+    { "prefixe": "TGHU856320", "attendu": 3 },
+    { "prefixe": "HLXU123456", "attendu": 1 },
+    { "prefixe": "CMAU200000", "attendu": 4 },
+    { "prefixe": "APLU999999", "attendu": 2 },
+    { "prefixe": "ONEU100000", "attendu": 1 }
+  ]
+}

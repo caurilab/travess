@@ -19,6 +19,7 @@ use App\Shared\Context\TenantContext;
 use App\Shared\Scopes\TenantScope;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 /**
  * Migration de propriété d'un dossier (ADR-013, Lot 7.3b) — l'opération la plus
@@ -55,6 +56,32 @@ final class MigrerProprieteDossier
         'extractions_ia' => 'document_id IN (SELECT id FROM documents WHERE dossier_id = ?)',
     ];
 
+    /**
+     * Tables rattachées à un dossier qui NE migrent PAS et NE doivent PAS exister
+     * pour un dossier migrable (agents propres au tenant ; paiements = sous-lot
+     * 7.5 non traité). La migration refuse si l'une contient des lignes, plutôt
+     * que de les abandonner chez le client (anti-orphelin). Le test de complétude
+     * (piloté par le schéma) impose que toute table de l'agrégat soit ici ou dans
+     * ENFANTS.
+     *
+     * @var list<string>
+     */
+    private const GARDEES = ['dossier_user', 'paiements', 'invitation_portail'];
+
+    /**
+     * Classification des tables de l'agrégat (pour le test de complétude).
+     *
+     * @return array{enfants: list<string>, speciales: list<string>, gardees: list<string>}
+     */
+    public static function classification(): array
+    {
+        return [
+            'enfants' => array_keys(self::ENFANTS),
+            'speciales' => ['dossiers', 'bls'], // racine + BL (remap armateur)
+            'gardees' => self::GARDEES,
+        ];
+    }
+
     public function __construct(
         private readonly TenantContext $tenant,
         private readonly GenerateurReference $reference,
@@ -79,6 +106,12 @@ final class MigrerProprieteDossier
         // Sérialise la migration de CE dossier et défère les FK composites le
         // temps du re-tenant (état transitoirement incohérent des deux côtés).
         DB::selectOne('select pg_advisory_xact_lock(hashtextextended(?, 0))', [$dossierId]);
+
+        // Anti-orphelin : refuse si des tables non migrables sont attachées
+        // (elles resteraient chez le client → fuite). Impossible pour un dossier
+        // autonome aujourd'hui ; garde explicite pour les évolutions.
+        $this->refuserSiNonMigrable($dossierId);
+
         DB::statement('SET CONSTRAINTS ALL DEFERRED');
 
         // Préparations en contexte T_transit (fiche client, armateurs, référence)
@@ -145,6 +178,23 @@ final class MigrerProprieteDossier
         DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
 
         return ['ancienne_reference' => $ancienneReference, 'nouvelle_reference' => $nouvelleReference];
+    }
+
+    private function refuserSiNonMigrable(string $dossierId): void
+    {
+        $bloque = $this->tenant->runBypassed(function () use ($dossierId): bool {
+            foreach (self::GARDEES as $table) {
+                if (DB::table($table)->where('dossier_id', $dossierId)->exists()) {
+                    return true;
+                }
+            }
+
+            return false;
+        });
+
+        if ($bloque) {
+            throw new HttpException(409, 'Dossier non éligible à la migration (collaborateurs ou paiements attachés).');
+        }
     }
 
     /**

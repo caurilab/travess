@@ -24,6 +24,8 @@ use App\Shared\Context\TenantContext;
 use App\Shared\Scopes\TenantScope;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Tests\Support\InteragitAvecLeTenant;
 use Tests\TestCase;
 
@@ -120,6 +122,58 @@ final class MigrationProprieteTest extends TestCase
             $this->assertSame($this->client->id, $acces->beneficiaire_user_id);
             $this->assertSame($this->workspace->id, $acces->beneficiaire_tenant_id);
         });
+    }
+
+    public function test_l_agregat_couvre_toutes_les_tables_rattachees_au_dossier(): void
+    {
+        // Anti-orphelin (audit 7.3b B1) : toute table portant tenant_id ET
+        // référençant un membre de l'agrégat doit être soit migrée (ENFANTS/
+        // spéciales), soit explicitement gardée (refus de migration). Une future
+        // table non classée fait échouer ce test — jamais de fuite silencieuse.
+        // On ne considère que les FK COMPOSITES (…, tenant_id) → parent(id,
+        // tenant_id) : ce sont les enfants tenant-scopés qui doivent migrer. Les
+        // tables inter-tenant (acces_dossier, demande_assignation,
+        // invitation_portail) référencent dossiers.id par une FK SIMPLE et ne
+        // font pas partie de l'agrégat migrable.
+        $rattachees = collect(DB::select(<<<'SQL'
+            SELECT DISTINCT c.conrelid::regclass::text AS tbl
+            FROM pg_constraint c
+            WHERE c.contype = 'f'
+              AND c.confrelid::regclass::text IN ('dossiers', 'bls', 'conteneurs', 'documents')
+              AND array_length(c.confkey, 1) = 2
+        SQL))->pluck('tbl')->all();
+
+        $classees = array_merge(
+            MigrerProprieteDossier::classification()['enfants'],
+            MigrerProprieteDossier::classification()['speciales'],
+            MigrerProprieteDossier::classification()['gardees'],
+        );
+
+        $nonClassees = array_diff($rattachees, $classees);
+
+        $this->assertSame([], array_values($nonClassees), 'Tables rattachées au dossier non classées : '.implode(', ', $nonClassees));
+    }
+
+    public function test_migration_refusee_si_paiement_attache(): void
+    {
+        // Une ligne « gardée » (paiement) attachée → refus (jamais d'orphelin).
+        $this->pourTenant($this->workspace, function (): void {
+            DB::table('paiements')->insert([
+                'id' => (string) Str::uuid(),
+                'tenant_id' => $this->workspace->id,
+                'dossier_id' => $this->dossierId,
+                'client_id' => Client::where('est_self', true)->value('id'),
+                'montant' => 1000,
+                'cible' => 'charge',
+                'operateur' => 'orange',
+                'statut' => 'initie',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        });
+
+        $this->expectException(HttpException::class);
+        $this->migrer();
     }
 
     public function test_apres_migration_le_client_voit_en_limite_via_le_portail(): void

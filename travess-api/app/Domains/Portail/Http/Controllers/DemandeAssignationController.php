@@ -55,10 +55,18 @@ final class DemandeAssignationController
             throw new HttpException(403, 'Réservé au gérant.');
         }
 
-        // RLS : seule une demande visant le tenant courant est visible → 404 sinon.
+        // RLS : seule une demande visant OU émise par le tenant courant est
+        // visible → 404 sinon.
         $demande = DemandeAssignation::query()->whereKey($id)->first();
 
         if ($demande === null) {
+            throw new HttpException(404, 'Demande introuvable.');
+        }
+
+        // Défense en profondeur (audit 7.3b M1) : décider est une action de la
+        // CIBLE, jamais du demandeur. On ne dépend pas de l'invariant « un tenant
+        // client n'a pas de gérant » posé dans un autre domaine.
+        if ($demande->transitaire_cible_id !== $requete->user()->tenant_id) {
             throw new HttpException(404, 'Demande introuvable.');
         }
 

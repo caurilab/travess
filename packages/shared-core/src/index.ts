@@ -8,3 +8,4 @@
  * garantissant la parité avec le port PHP de l'API.
  */
 export * from './iso6346/index.js';
+export * from './surestaries/index.js';

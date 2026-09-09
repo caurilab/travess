@@ -1,0 +1,247 @@
+{
+  "description": "Vecteurs surestaries/détention. Source UNIQUE de vérité PHP<->TS. Barème progressif, jours calendaires, date_debut=jour 1, date_fin_franchise=dernier jour gratuit, jour entamé dû, montants entiers XOF.",
+  "baremes": {
+    "maersk_standard": {
+      "devise": "XOF",
+      "paliers_par_type": {
+        "20": [
+          {
+            "de_jour": 1,
+            "a_jour": 5,
+            "tarif_jour": 10000
+          },
+          {
+            "de_jour": 6,
+            "a_jour": 10,
+            "tarif_jour": 20000
+          },
+          {
+            "de_jour": 11,
+            "a_jour": null,
+            "tarif_jour": 35000
+          }
+        ],
+        "40": [
+          {
+            "de_jour": 1,
+            "a_jour": 5,
+            "tarif_jour": 15000
+          },
+          {
+            "de_jour": 6,
+            "a_jour": 10,
+            "tarif_jour": 30000
+          },
+          {
+            "de_jour": 11,
+            "a_jour": null,
+            "tarif_jour": 50000
+          }
+        ],
+        "defaut": [
+          {
+            "de_jour": 1,
+            "a_jour": 10,
+            "tarif_jour": 12000
+          },
+          {
+            "de_jour": 11,
+            "a_jour": null,
+            "tarif_jour": 25000
+          }
+        ]
+      }
+    }
+  },
+  "cas": [
+    {
+      "nom": "surestaries 40, 3 jours facturés",
+      "entree": {
+        "type": "surestaries",
+        "date_debut": "2026-01-01",
+        "jours_francs": 7,
+        "bareme_ref": "maersk_standard",
+        "type_conteneur": "40",
+        "statut_conteneur": "a_traiter",
+        "date_evaluation": "2026-01-10",
+        "horizon_menacant_jours": 3
+      },
+      "attendu": {
+        "date_fin_franchise": "2026-01-07",
+        "premier_jour_facture": "2026-01-08",
+        "montant_en_cours": 45000,
+        "montant_menacant": 60000,
+        "actif": true,
+        "jours_factures": 3
+      }
+    },
+    {
+      "nom": "pré-franchise (en_cours=0, menaçant>0)",
+      "entree": {
+        "type": "surestaries",
+        "date_debut": "2026-01-01",
+        "jours_francs": 7,
+        "bareme_ref": "maersk_standard",
+        "type_conteneur": "40",
+        "statut_conteneur": "a_traiter",
+        "date_evaluation": "2026-01-06",
+        "horizon_menacant_jours": 3
+      },
+      "attendu": {
+        "date_fin_franchise": "2026-01-07",
+        "premier_jour_facture": "2026-01-08",
+        "montant_en_cours": 0,
+        "montant_menacant": 30000,
+        "actif": true,
+        "jours_factures": 0
+      }
+    },
+    {
+      "nom": "frontière : dernier jour gratuit",
+      "entree": {
+        "type": "surestaries",
+        "date_debut": "2026-01-01",
+        "jours_francs": 7,
+        "bareme_ref": "maersk_standard",
+        "type_conteneur": "40",
+        "statut_conteneur": "a_traiter",
+        "date_evaluation": "2026-01-07",
+        "horizon_menacant_jours": 3
+      },
+      "attendu": {
+        "date_fin_franchise": "2026-01-07",
+        "premier_jour_facture": "2026-01-08",
+        "montant_en_cours": 0,
+        "montant_menacant": 45000,
+        "actif": true,
+        "jours_factures": 0
+      }
+    },
+    {
+      "nom": "saut de palier (jour 6)",
+      "entree": {
+        "type": "surestaries",
+        "date_debut": "2026-01-01",
+        "jours_francs": 0,
+        "bareme_ref": "maersk_standard",
+        "type_conteneur": "40",
+        "statut_conteneur": "a_traiter",
+        "date_evaluation": "2026-01-06",
+        "horizon_menacant_jours": 2
+      },
+      "attendu": {
+        "date_fin_franchise": "2025-12-31",
+        "premier_jour_facture": "2026-01-01",
+        "montant_en_cours": 105000,
+        "montant_menacant": 60000,
+        "actif": true,
+        "jours_factures": 6
+      }
+    },
+    {
+      "nom": "palier ouvert (jour 12)",
+      "entree": {
+        "type": "surestaries",
+        "date_debut": "2026-01-01",
+        "jours_francs": 0,
+        "bareme_ref": "maersk_standard",
+        "type_conteneur": "40",
+        "statut_conteneur": "a_traiter",
+        "date_evaluation": "2026-01-12",
+        "horizon_menacant_jours": 1
+      },
+      "attendu": {
+        "date_fin_franchise": "2025-12-31",
+        "premier_jour_facture": "2026-01-01",
+        "montant_en_cours": 325000,
+        "montant_menacant": 50000,
+        "actif": true,
+        "jours_factures": 12
+      }
+    },
+    {
+      "nom": "détention active (enlevé)",
+      "entree": {
+        "type": "detention",
+        "date_debut": "2026-02-01",
+        "jours_francs": 3,
+        "bareme_ref": "maersk_standard",
+        "type_conteneur": "20",
+        "statut_conteneur": "enleve",
+        "date_evaluation": "2026-02-08",
+        "horizon_menacant_jours": 3
+      },
+      "attendu": {
+        "date_fin_franchise": "2026-02-03",
+        "premier_jour_facture": "2026-02-04",
+        "montant_en_cours": 50000,
+        "montant_menacant": 60000,
+        "actif": true,
+        "jours_factures": 5
+      }
+    },
+    {
+      "nom": "type absent → defaut",
+      "entree": {
+        "type": "surestaries",
+        "date_debut": "2026-03-01",
+        "jours_francs": 2,
+        "bareme_ref": "maersk_standard",
+        "type_conteneur": "reefer",
+        "statut_conteneur": "a_traiter",
+        "date_evaluation": "2026-03-05",
+        "horizon_menacant_jours": 2
+      },
+      "attendu": {
+        "date_fin_franchise": "2026-03-02",
+        "premier_jour_facture": "2026-03-03",
+        "montant_en_cours": 36000,
+        "montant_menacant": 24000,
+        "actif": true,
+        "jours_factures": 3
+      }
+    },
+    {
+      "nom": "inactif (rendu) → actif=false",
+      "entree": {
+        "type": "detention",
+        "date_debut": "2026-01-01",
+        "jours_francs": 3,
+        "bareme_ref": "maersk_standard",
+        "type_conteneur": "40",
+        "statut_conteneur": "rendu",
+        "date_evaluation": "2026-01-10",
+        "horizon_menacant_jours": 3
+      },
+      "attendu": {
+        "date_fin_franchise": "2026-01-03",
+        "premier_jour_facture": "2026-01-04",
+        "montant_en_cours": 135000,
+        "montant_menacant": 90000,
+        "actif": false,
+        "jours_factures": 7
+      }
+    },
+    {
+      "nom": "jours_francs=0, facturation dès date_debut",
+      "entree": {
+        "type": "surestaries",
+        "date_debut": "2026-04-01",
+        "jours_francs": 0,
+        "bareme_ref": "maersk_standard",
+        "type_conteneur": "40",
+        "statut_conteneur": "a_traiter",
+        "date_evaluation": "2026-04-01",
+        "horizon_menacant_jours": 0
+      },
+      "attendu": {
+        "date_fin_franchise": "2026-03-31",
+        "premier_jour_facture": "2026-04-01",
+        "montant_en_cours": 15000,
+        "montant_menacant": 0,
+        "actif": true,
+        "jours_factures": 1
+      }
+    }
+  ]
+}

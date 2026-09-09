@@ -97,6 +97,15 @@ final class ConteneurApiTest extends TestCase
             ->assertJsonPath('data.statut', 'enleve');
     }
 
+    public function test_un_chauffeur_ne_peut_pas_consulter_un_bl(): void
+    {
+        [$tenant, , $blId] = $this->contexteAvecBl();
+        $chauffeur = User::factory()->pourTenant($tenant)->role(RoleUtilisateur::Chauffeur)->create();
+        Sanctum::actingAs($chauffeur);
+
+        $this->getJson("/api/v1/bl/{$blId}")->assertForbidden();
+    }
+
     public function test_un_conteneur_d_un_autre_tenant_est_introuvable(): void
     {
         [, , $blId] = $this->contexteAvecBl();

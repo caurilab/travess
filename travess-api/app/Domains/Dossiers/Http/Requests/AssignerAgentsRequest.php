@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domains\Dossiers\Http\Requests;
 
+use App\Domains\Identity\Enums\RoleUtilisateur;
 use App\Shared\Context\TenantContext;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -27,7 +28,10 @@ final class AssignerAgentsRequest extends FormRequest
             'agents' => ['present', 'array'],
             'agents.*' => [
                 'uuid',
-                Rule::exists('users', 'id')->where('tenant_id', $tenantId),
+                // Seuls des utilisateurs internes assignables (gérant/agent) du tenant.
+                Rule::exists('users', 'id')
+                    ->where('tenant_id', $tenantId)
+                    ->whereIn('role', [RoleUtilisateur::Gerant->value, RoleUtilisateur::Agent->value]),
             ],
         ];
     }

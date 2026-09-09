@@ -34,14 +34,14 @@ final class GenerateurReference
         DB::selectOne('select pg_advisory_xact_lock(hashtext(?))', ["ref:{$tenantId}:{$annee}:{$prefixe}"]);
 
         $motif = "{$prefixe}-{$annee}-";
+        $positionSuffixe = strlen($motif) + 1; // 1-indexé pour substring() PostgreSQL
 
-        $derniere = Dossier::where('reference', 'like', $motif.'%')
-            ->orderByDesc('reference')
-            ->value('reference');
+        // Max numérique du suffixe (robuste au-delà de 9999, contrairement à un
+        // tri lexicographique). $positionSuffixe vient de nos propres chaînes.
+        $dernier = Dossier::where('reference', 'like', $motif.'%')
+            ->max(DB::raw("CAST(substring(reference FROM {$positionSuffixe}) AS integer)"));
 
-        $numero = $derniere !== null
-            ? ((int) substr((string) $derniere, strlen($motif))) + 1
-            : 1;
+        $numero = $dernier !== null ? ((int) $dernier) + 1 : 1;
 
         return $motif.str_pad((string) $numero, 4, '0', STR_PAD_LEFT);
     }

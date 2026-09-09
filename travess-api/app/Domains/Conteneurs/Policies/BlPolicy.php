@@ -13,6 +13,8 @@ use App\Domains\Identity\Models\User;
  */
 final class BlPolicy
 {
+    private const LECTURE = [RoleUtilisateur::Gerant, RoleUtilisateur::Agent, RoleUtilisateur::Comptable];
+
     private const ECRITURE = [RoleUtilisateur::Gerant, RoleUtilisateur::Agent];
 
     public function create(User $acteur): bool
@@ -22,6 +24,7 @@ final class BlPolicy
 
     public function view(User $acteur, Bl $bl): bool
     {
-        return $acteur->tenant_id === $bl->tenant_id;
+        return $acteur->tenant_id === $bl->tenant_id
+            && in_array($acteur->role, self::LECTURE, true);
     }
 }

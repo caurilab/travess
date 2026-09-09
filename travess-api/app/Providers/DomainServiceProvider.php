@@ -19,6 +19,9 @@ use App\Domains\Dossiers\Policies\DossierPolicy;
 use App\Domains\Dossiers\Policies\EtapePolicy;
 use App\Domains\Identity\Models\User;
 use App\Domains\Identity\Policies\UserPolicy;
+use App\Domains\Ingestion\Adapters\ExtracteurFactice;
+use App\Domains\Ingestion\Adapters\ExtracteurLaravelAi;
+use App\Domains\Ingestion\Contracts\ExtracteurDocument;
 use App\Domains\Surestaries\Policies\FranchisePolicy;
 use App\Shared\Context\TenantContext;
 use Illuminate\Support\Facades\Gate;
@@ -39,6 +42,12 @@ final class DomainServiceProvider extends ServiceProvider
         // runtime persistant (Octane), Laravel vide automatiquement les bindings
         // scoped entre deux requêtes → pas de fuite de contexte inter-requêtes.
         $this->app->scoped(TenantContext::class);
+
+        // Extracteur documentaire : fournisseur isolé derrière l'interface
+        // (principe n°9). « factice » par défaut (dev/tests sans clé).
+        $this->app->bind(ExtracteurDocument::class, static fn (): ExtracteurDocument => config('ia.driver') === 'laravel_ai'
+            ? new ExtracteurLaravelAi()
+            : new ExtracteurFactice());
     }
 
     public function boot(): void

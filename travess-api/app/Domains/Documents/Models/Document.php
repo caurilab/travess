@@ -11,6 +11,7 @@ use App\Shared\Concerns\BelongsToTenant;
 use App\Shared\Models\BaseModel;
 use Database\Factories\DocumentFactory;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * Document rattaché à un dossier (objet de stockage + pipeline d'ingestion).
@@ -49,6 +50,14 @@ final class Document extends BaseModel
             'statut_ingestion' => StatutIngestion::class,
             'taille' => 'integer',
         ];
+    }
+
+    /**
+     * @return HasMany<ExtractionIa, $this>
+     */
+    public function extractions(): HasMany
+    {
+        return $this->hasMany(ExtractionIa::class);
     }
 
     protected static function newFactory(): Factory

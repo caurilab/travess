@@ -9,6 +9,7 @@ use App\Shared\Concerns\BelongsToTenant;
 use App\Shared\Models\BaseModel;
 use Database\Factories\ExtractionIaFactory;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 
 /**
@@ -22,7 +23,7 @@ use Illuminate\Support\Carbon;
  * @property array<string, mixed> $corrections
  * @property string|null $valide_par
  * @property Carbon|null $valide_at
- * @property string $cout_unite
+ * @property string $cout_unite nombre d'unités consommées par cette extraction (décompté au quota, cf. DecompteConsommationIa)
  */
 final class ExtractionIa extends BaseModel
 {
@@ -49,6 +50,14 @@ final class ExtractionIa extends BaseModel
             'valide_at' => 'datetime',
             'cout_unite' => 'decimal:2',
         ];
+    }
+
+    /**
+     * @return BelongsTo<Document, $this>
+     */
+    public function document(): BelongsTo
+    {
+        return $this->belongsTo(Document::class);
     }
 
     protected static function newFactory(): Factory

@@ -28,4 +28,14 @@ final class DocumentPolicy
         return $acteur->tenant_id === $document->tenant_id
             && in_array($acteur->role, self::LECTURE, true);
     }
+
+    /**
+     * Lancer une extraction IA et valider son résultat (l'IA propose, l'humain
+     * valide) : réservé aux rôles en écriture, tenant revérifié.
+     */
+    public function extraire(User $acteur, Document $document): bool
+    {
+        return $acteur->tenant_id === $document->tenant_id
+            && in_array($acteur->role, self::ECRITURE, true);
+    }
 }

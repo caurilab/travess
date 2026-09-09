@@ -21,6 +21,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string $id
  * @property string $nom
  * @property TypeTenant $type
+ * @property bool $annuaire_public
  * @property PlanTenant $plan
  * @property StatutTenant $statut
  * @property int $quota_ia_mensuel
@@ -32,6 +33,7 @@ final class Tenant extends BaseModel
     protected $fillable = [
         'nom',
         'type',
+        'annuaire_public',
         'plan',
         'statut',
         'quota_ia_mensuel',
@@ -43,6 +45,7 @@ final class Tenant extends BaseModel
     {
         return [
             'type' => TypeTenant::class,
+            'annuaire_public' => 'boolean',
             'plan' => PlanTenant::class,
             'statut' => StatutTenant::class,
             'quota_ia_mensuel' => 'integer',

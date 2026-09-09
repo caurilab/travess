@@ -18,8 +18,11 @@ use App\Domains\Portail\Http\Resources\BlPortailResource;
 use App\Domains\Portail\Http\Resources\ConteneurPortailResource;
 use App\Domains\Portail\Http\Resources\DemandeAssignationResource;
 use App\Domains\Portail\Http\Resources\DossierAutonomeResource;
+use App\Domains\Portail\Http\Resources\TransitaireAnnuaireResource;
 use App\Domains\Portail\Policies\DossierAutonomePolicy;
 use App\Domains\Portail\Services\FindOrCreateArmateurAutonome;
+use App\Domains\Tenancy\Enums\TypeTenant;
+use App\Domains\Tenancy\Models\Tenant;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -90,6 +93,23 @@ final class PortailAutonomeController
         ]);
 
         return ConteneurPortailResource::make($conteneur->load('suivis'))->response()->setStatusCode(201);
+    }
+
+    public function annuaire(Request $requete): AnonymousResourceCollection
+    {
+        $requete_recherche = $requete->query('q');
+
+        $transitaires = Tenant::query()
+            ->where('type', TypeTenant::Transitaire->value)
+            ->where('annuaire_public', true)
+            ->when(is_string($requete_recherche) && $requete_recherche !== '', function ($query) use ($requete_recherche): void {
+                $query->where('nom', 'ilike', '%'.$requete_recherche.'%');
+            })
+            ->orderBy('nom')
+            ->limit(50)
+            ->get();
+
+        return TransitaireAnnuaireResource::collection($transitaires);
     }
 
     public function demanderAssignation(

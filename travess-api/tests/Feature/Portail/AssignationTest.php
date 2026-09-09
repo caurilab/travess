@@ -55,7 +55,7 @@ final class AssignationTest extends TestCase
             $this->dossierId = $dossier->id;
         });
 
-        $this->transitaire = Tenant::factory()->create();
+        $this->transitaire = Tenant::factory()->create(['annuaire_public' => true]);
         $this->gerant = User::factory()->pourTenant($this->transitaire)->role(RoleUtilisateur::Gerant)->create();
     }
 

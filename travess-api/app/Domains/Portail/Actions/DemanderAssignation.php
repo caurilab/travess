@@ -32,8 +32,9 @@ final class DemanderAssignation
     {
         $cible = Tenant::find($transitaireId);
 
-        if ($cible === null || $cible->type !== TypeTenant::Transitaire) {
-            throw new HttpException(422, 'Transitaire cible invalide.');
+        // Seul un transitaire inscrit à l'annuaire (opt-in, 7.4) est assignable.
+        if ($cible === null || $cible->type !== TypeTenant::Transitaire || ! $cible->annuaire_public) {
+            throw new HttpException(422, 'Transitaire cible invalide ou non disponible.');
         }
 
         return DB::transaction(function () use ($dossier, $cible, $message): DemandeAssignation {

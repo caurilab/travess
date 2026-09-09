@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Domains\Portail\Http\Controllers\AgenceController;
 use App\Domains\Portail\Http\Controllers\DemandeAssignationController;
 use App\Domains\Portail\Http\Controllers\InvitationController;
 use App\Domains\Portail\Http\Controllers\OnboardingController;
@@ -32,13 +33,15 @@ Route::middleware(['auth:sanctum', 'tenant', 'autonome'])->prefix('portail/auton
     Route::post('dossiers/{dossier}/bls', [PortailAutonomeController::class, 'storeBl']);
     Route::post('bls/{bl}/conteneurs', [PortailAutonomeController::class, 'storeConteneur']);
     Route::post('dossiers/{dossier}/assignation', [PortailAutonomeController::class, 'demanderAssignation']);
+    Route::get('annuaire', [PortailAutonomeController::class, 'annuaire']);
 });
 
-// 2 bis. Demandes d'assignation côté transitaire (inbox + décision, gérant).
+// 2 bis. Demandes d'assignation + réglages d'agence côté transitaire (gérant).
 Route::middleware(['auth:sanctum', 'tenant'])->group(function (): void {
     Route::get('demandes-assignation', [DemandeAssignationController::class, 'index']);
     Route::post('demandes-assignation/{demande}/accepter', [DemandeAssignationController::class, 'accepter']);
     Route::post('demandes-assignation/{demande}/refuser', [DemandeAssignationController::class, 'refuser']);
+    Route::put('agence/annuaire', [AgenceController::class, 'definirVisibiliteAnnuaire']);
 });
 
 // 2. Émission d'invitations par le transitaire (throttle + plafond par tenant).

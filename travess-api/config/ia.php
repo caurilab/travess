@@ -16,11 +16,15 @@ use App\Domains\Documents\Enums\TypeDocument;
 */
 
 return [
-    // 'factice' (déterministe, sans réseau) | 'laravel_ai' (Claude via laravel/ai)
+    // 'factice' (déterministe, sans réseau) | 'laravel_ai' (Claude via laravel/ai).
+    // Rester sur « factice » par défaut : les tests tournent sans clé. Mettre
+    // « laravel_ai » dans .env pour activer l'extraction réelle.
     'driver' => env('IA_DRIVER', 'factice'),
 
-    'provider' => env('IA_PROVIDER', 'anthropic'),
-    'modele' => env('IA_MODELE', 'claude-sonnet-5'),
+    // Fournisseur (nom d'instance dans config/ai.php de laravel/ai) et modèle.
+    // La clé du fournisseur vit dans .env (ANTHROPIC_API_KEY), lue par laravel/ai.
+    'provider' => env('AI_PROVIDER', 'anthropic'),
+    'modele' => env('AI_MODEL', 'claude-opus-4-8'),
 
     // Disque objet où sont stockés les documents (lecture côté serveur, base64
     // inline vers le fournisseur — jamais d'URL publique).

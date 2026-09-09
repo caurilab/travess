@@ -1,0 +1,68 @@
+/*
+ * Jetons Travess exposés en variables CSS.
+ * Import : @travess/ui/tokens.css
+ * Thème clair (le thème sombre sera ajouté ultérieurement).
+ */
+:root {
+  /* Marque (corail) */
+  --tv-marque-50: #fff3ef;
+  --tv-marque-100: #ffe1d8;
+  --tv-marque-200: #ffc2b0;
+  --tv-marque-300: #ff9c82;
+  --tv-marque-400: #f87556;
+  --tv-marque-500: #ea5a3d;
+  --tv-marque-600: #c9452b;
+  --tv-marque-700: #a13521;
+
+  /* Sémantique de statut */
+  --tv-risque: #d92d20;
+  --tv-encours: #f59e0b;
+  --tv-regle: #12b76a;
+  --tv-info: #2e90fa;
+
+  /* Neutres */
+  --tv-neutre-0: #ffffff;
+  --tv-neutre-50: #fafaf9;
+  --tv-neutre-100: #f5f5f4;
+  --tv-neutre-200: #e7e5e4;
+  --tv-neutre-300: #d6d3d1;
+  --tv-neutre-400: #a8a29e;
+  --tv-neutre-500: #78716c;
+  --tv-neutre-600: #57534e;
+  --tv-neutre-700: #44403c;
+  --tv-neutre-800: #292524;
+  --tv-neutre-900: #1c1917;
+
+  /* Rôles sémantiques */
+  --tv-fond: var(--tv-neutre-50);
+  --tv-surface: var(--tv-neutre-0);
+  --tv-texte: var(--tv-neutre-900);
+  --tv-texte-attenue: var(--tv-neutre-500);
+  --tv-bordure: var(--tv-neutre-200);
+  --tv-primaire: var(--tv-marque-500);
+  --tv-primaire-contraste: var(--tv-neutre-0);
+
+  /* Espacement */
+  --tv-espace-1: 4px;
+  --tv-espace-2: 8px;
+  --tv-espace-3: 12px;
+  --tv-espace-4: 16px;
+  --tv-espace-5: 20px;
+  --tv-espace-6: 24px;
+  --tv-espace-8: 32px;
+
+  /* Rayon */
+  --tv-rayon-sm: 6px;
+  --tv-rayon-md: 10px;
+  --tv-rayon-lg: 16px;
+  --tv-rayon-pilule: 9999px;
+
+  /* Ombres */
+  --tv-ombre-sm: 0 1px 2px rgba(28, 25, 23, 0.06);
+  --tv-ombre-md: 0 4px 12px rgba(28, 25, 23, 0.08);
+  --tv-ombre-lg: 0 12px 28px rgba(28, 25, 23, 0.12);
+
+  /* Typographie */
+  --tv-police: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --tv-police-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+}

@@ -85,6 +85,19 @@
 3. Lancer le **Lot 0** (fondations monorepo + API + auth + multi-tenant + modèle de données + design system).
 4. Souscrire **JSONCargo Navigator** et instrumenter la consommation dès le Lot 4.
 
+## Décisions produit à intégrer (cadrage en cours)
+
+> Modèle client/transitaire & partage inter-tenant — cadrage en cours (impacte l'isolation stricte d'ADR-004). Conception délibérée à faire au lot Portail/onboarding (architecte + auditeur + nouvel ADR). Non tranché : le modèle de tenant exact (transitaire = tenant + client compte partagé, vs deux espaces). Le travail interne au transitaire (Lots 0–2) reste valide quel que soit le modèle.
+
+- **Deux types de comptes, non cumulables** : un compte est **soit** transitaire **soit** client (on abandonne l'idée d'un compte bi-rôle commutable).
+- **Le client peut créer un dossier** depuis son compte, saisir toutes les infos (BL…). Le champ **« assigner un transitaire » est facultatif**, choisi dans un **annuaire de tous les transitaires de la plateforme** (recherche) → partage inter-tenant.
+- **Deux flux d'assignation** (symétriques) : client → assigne un transitaire → notification → le transitaire **accepte** et enrichit ; ou transitaire → crée le dossier → **invite** son client (lien) → le client valide et accède.
+- **Visibilité selon la posture** :
+  - **Transitaire** : voit **tout** le dossier.
+  - **Client avec transitaire assigné** : vue **restreinte** — contenu du/des BL + **parcours** (avancement). Pas de finances, documents internes, journal, communication interne.
+  - **Client sans transitaire** (il gère lui-même, va directement à l'armateur) : voit **tout son dossier** et dispose de **plus d'options** qu'un client simple — position « intermédiaire » entre client et transitaire, sans toutefois les fonctionnalités propres au transitaire.
+- Impact conception : **projections multiples** du détail dossier + policies selon la posture ; annuaire public des transitaires ; mécanisme de partage/ACL inter-tenant ; acceptation d'assignation.
+
 ## Questions ouvertes
 
 - Table de correspondance précise `container_status` → statut Travess (à établir sur données réelles).

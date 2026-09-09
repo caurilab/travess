@@ -6,6 +6,7 @@ namespace App\Domains\Dossiers\Models;
 
 use App\Domains\Conteneurs\Models\Bl;
 use App\Domains\Documents\Models\Document;
+use App\Domains\Dossiers\Enums\PostureDossier;
 use App\Domains\Dossiers\Enums\SensDossier;
 use App\Domains\Dossiers\Enums\StatutDossier;
 use App\Domains\Identity\Models\User;
@@ -27,6 +28,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property SensDossier $sens
  * @property string $client_id
  * @property StatutDossier $statut
+ * @property PostureDossier $posture
  * @property string|null $motif_blocage
  */
 final class Dossier extends BaseModel
@@ -38,6 +40,7 @@ final class Dossier extends BaseModel
         'sens',
         'client_id',
         'statut',
+        'posture',
         'motif_blocage',
     ];
 
@@ -46,6 +49,7 @@ final class Dossier extends BaseModel
         return [
             'sens' => SensDossier::class,
             'statut' => StatutDossier::class,
+            'posture' => PostureDossier::class,
         ];
     }
 

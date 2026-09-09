@@ -1,6 +1,7 @@
 <?php
 
 use App\Domains\Surestaries\Console\RafraichirSurestariesCommand;
+use App\Shared\Http\Middleware\EnsureAutonomeContext;
 use App\Shared\Http\Middleware\EnsureInvitationContext;
 use App\Shared\Http\Middleware\EnsurePortailContext;
 use App\Shared\Http\Middleware\EnsureTenantContext;
@@ -22,6 +23,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'tenant' => EnsureTenantContext::class,
             'portail' => EnsurePortailContext::class,
             'invitation' => EnsureInvitationContext::class,
+            'autonome' => EnsureAutonomeContext::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

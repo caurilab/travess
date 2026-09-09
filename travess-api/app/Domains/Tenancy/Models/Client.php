@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
  * @property string $id
  * @property string $tenant_id
  * @property string $nom
+ * @property bool $est_self
  * @property string|null $contact
  * @property array<string, mixed> $canaux
  */
@@ -24,6 +25,7 @@ final class Client extends BaseModel
 
     protected $fillable = [
         'nom',
+        'est_self',
         'contact',
         'canaux',
     ];
@@ -31,6 +33,7 @@ final class Client extends BaseModel
     protected function casts(): array
     {
         return [
+            'est_self' => 'boolean',
             'canaux' => 'array',
         ];
     }

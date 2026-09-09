@@ -30,7 +30,7 @@ final class CreerDossier
     ) {}
 
     /**
-     * @param  array{sens: string, client_id: string}  $donnees
+     * @param  array{sens: string, client_id: string, posture?: string}  $donnees
      */
     public function executer(array $donnees): Dossier
     {
@@ -42,6 +42,9 @@ final class CreerDossier
                 'sens' => $sens->value,
                 'client_id' => $donnees['client_id'],
                 'statut' => StatutDossier::Ouvert->value,
+                // Posture par défaut « géré par transitaire » (surface agent) ;
+                // la surface autonome passe explicitement « autonome ».
+                ...(isset($donnees['posture']) ? ['posture' => $donnees['posture']] : []),
             ]);
 
             $this->instancierWorkflow($dossier, $sens);

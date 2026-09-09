@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Domains\Portail\Http\Controllers\InvitationController;
 use App\Domains\Portail\Http\Controllers\OnboardingController;
+use App\Domains\Portail\Http\Controllers\PortailAutonomeController;
 use App\Domains\Portail\Http\Controllers\PortailDossierController;
 use Illuminate\Support\Facades\Route;
 
@@ -20,6 +21,15 @@ use Illuminate\Support\Facades\Route;
 Route::middleware(['auth:sanctum', 'tenant', 'portail'])->prefix('portail')->group(function (): void {
     Route::get('dossiers', [PortailDossierController::class, 'index']);
     Route::get('dossiers/{dossier}', [PortailDossierController::class, 'show']);
+});
+
+// 1 bis. Surface autonome : le client crée et gère SES dossiers (vue étendue).
+Route::middleware(['auth:sanctum', 'tenant', 'autonome'])->prefix('portail/autonome')->group(function (): void {
+    Route::get('dossiers', [PortailAutonomeController::class, 'index']);
+    Route::post('dossiers', [PortailAutonomeController::class, 'store']);
+    Route::get('dossiers/{dossier}', [PortailAutonomeController::class, 'show']);
+    Route::post('dossiers/{dossier}/bls', [PortailAutonomeController::class, 'storeBl']);
+    Route::post('bls/{bl}/conteneurs', [PortailAutonomeController::class, 'storeConteneur']);
 });
 
 // 2. Émission d'invitations par le transitaire (throttle + plafond par tenant).

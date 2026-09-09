@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Surestaries;
 
+use App\Domains\Alertes\Mail\AlerteMail;
 use App\Domains\Alertes\Models\Alerte;
+use App\Domains\Alertes\Models\Notification;
 use App\Domains\Armateurs\Models\Armateur;
 use App\Domains\Identity\Enums\RoleUtilisateur;
 use App\Domains\Identity\Models\User;
@@ -13,6 +15,7 @@ use App\Domains\Tenancy\Models\Client;
 use App\Domains\Tenancy\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Mail;
 use Laravel\Sanctum\Sanctum;
 use Tests\Support\InteragitAvecLeTenant;
 use Tests\TestCase;
@@ -81,6 +84,24 @@ final class AlerteEngineTest extends TestCase
         $this->patchJson("/api/v1/alertes/{$alerteId}", ['statut' => 'traitee'])
             ->assertOk()
             ->assertJsonPath('data.statut', 'traitee');
+    }
+
+    public function test_l_alerte_declenche_un_envoi_email_journalise(): void
+    {
+        Mail::fake();
+        [$tenant, $gerant] = $this->contexteAvecFranchise();
+
+        RafraichirSurestaries::dispatch($tenant->id);
+
+        Mail::assertQueued(AlerteMail::class);
+
+        $this->pourTenant($tenant, function () use ($gerant): void {
+            $this->assertTrue(
+                Notification::where('destinataire_id', $gerant->id)
+                    ->where('canal', 'email')->where('statut', 'envoye')->exists(),
+            );
+            $this->assertContains('email', Alerte::first()?->canaux_envoyes ?? []);
+        });
     }
 
     public function test_dashboard_argent_en_feu(): void

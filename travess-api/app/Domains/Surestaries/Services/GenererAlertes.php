@@ -6,10 +6,12 @@ namespace App\Domains\Surestaries\Services;
 
 use App\Domains\Alertes\Enums\StatutAlerte;
 use App\Domains\Alertes\Enums\TypeAlerte;
+use App\Domains\Alertes\Jobs\EnvoyerAlerte;
 use App\Domains\Alertes\Models\Alerte;
 use App\Domains\Audit\Services\Auditeur;
 use App\Domains\Conteneurs\Enums\TypeFranchise;
 use App\Domains\Conteneurs\Models\Franchise;
+use App\Shared\Context\TenantContext;
 use Illuminate\Support\Carbon;
 
 /**
@@ -23,6 +25,7 @@ final class GenererAlertes
 {
     public function __construct(
         private readonly Auditeur $auditeur,
+        private readonly TenantContext $tenant,
     ) {}
 
     public function pourTenantCourant(?Carbon $aujourdhui = null): int
@@ -54,6 +57,8 @@ final class GenererAlertes
                 if ($alerte->wasRecentlyCreated) {
                     $creees++;
                     $this->auditeur->creation($alerte, 'alerte.generee');
+                    // Envoi multi-canal en file (principe n°4).
+                    EnvoyerAlerte::dispatch($this->tenant->idOrFail(), $alerte->id);
                 }
             });
 

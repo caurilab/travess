@@ -1,5 +1,6 @@
 <?php
 
+use App\Domains\Surestaries\Console\RafraichirSurestariesCommand;
 use App\Shared\Http\Middleware\EnsureTenantContext;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -23,4 +24,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
         );
-    })->create();
+    })
+    ->withCommands([
+        RafraichirSurestariesCommand::class,
+    ])
+    ->create();

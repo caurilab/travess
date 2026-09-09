@@ -49,3 +49,18 @@ export type StatutIngestion = (typeof STATUTS_INGESTION)[number];
 
 export const TYPES_FRANCHISE = ['surestaries', 'detention'] as const;
 export type TypeFranchise = (typeof TYPES_FRANCHISE)[number];
+
+export const TYPES_ALERTE = [
+  'surestaries_j3',
+  'surestaries_j1',
+  'surestaries_j0',
+  'detention_j3',
+  'detention_j1',
+  'detention_j0',
+  'sla_depasse',
+  'blocage',
+] as const;
+export type TypeAlerte = (typeof TYPES_ALERTE)[number];
+
+export const STATUTS_ALERTE = ['ouverte', 'vue', 'traitee'] as const;
+export type StatutAlerte = (typeof STATUTS_ALERTE)[number];

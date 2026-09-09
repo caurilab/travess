@@ -44,12 +44,23 @@ final class RecalculFranchise
             'horizon_menacant_jours' => self::HORIZON_MENACANT_JOURS,
         ]);
 
-        $franchise->forceFill([
-            'date_fin_franchise' => $resultat['date_fin_franchise'],
-            'montant_en_cours' => $resultat['montant_en_cours'],
-            'montant_menacant' => $resultat['montant_menacant'],
-            'actif' => $resultat['actif'],
-        ]);
+        if ($resultat['actif']) {
+            $franchise->forceFill([
+                'date_fin_franchise' => $resultat['date_fin_franchise'],
+                'montant_en_cours' => $resultat['montant_en_cours'],
+                'montant_menacant' => $resultat['montant_menacant'],
+                'actif' => true,
+            ]);
+        } else {
+            // Conteneur sorti : on FIGE le montant en cours à sa dernière valeur
+            // (coût réellement accumulé jusqu'à la sortie) et il n'y a plus de
+            // menace. Base de la métrique « surestaries évitées ».
+            $franchise->forceFill([
+                'date_fin_franchise' => $resultat['date_fin_franchise'],
+                'montant_menacant' => 0,
+                'actif' => false,
+            ]);
+        }
 
         return $franchise;
     }

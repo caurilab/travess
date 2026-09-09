@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Domains\Alertes\Models\Alerte;
+use App\Domains\Alertes\Policies\AlertePolicy;
 use App\Domains\Conteneurs\Models\Bl;
 use App\Domains\Conteneurs\Models\Conteneur;
 use App\Domains\Conteneurs\Models\Franchise;
@@ -50,5 +52,6 @@ final class DomainServiceProvider extends ServiceProvider
         Gate::policy(Conteneur::class, ConteneurPolicy::class);
         Gate::policy(Document::class, DocumentPolicy::class);
         Gate::policy(Franchise::class, FranchisePolicy::class);
+        Gate::policy(Alerte::class, AlertePolicy::class);
     }
 }

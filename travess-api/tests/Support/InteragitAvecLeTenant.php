@@ -28,12 +28,7 @@ trait InteragitAvecLeTenant
     protected function pourTenant(Tenant|string $tenant, \Closure $callback): mixed
     {
         $id = $tenant instanceof Tenant ? $tenant->id : $tenant;
-        $this->contexteTenant()->set($id);
 
-        try {
-            return $callback();
-        } finally {
-            $this->contexteTenant()->forget();
-        }
+        return $this->contexteTenant()->pour($id, $callback);
     }
 }

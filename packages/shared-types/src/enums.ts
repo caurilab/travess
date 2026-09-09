@@ -46,3 +46,6 @@ export type OrigineDocument = (typeof ORIGINES_DOCUMENT)[number];
 
 export const STATUTS_INGESTION = ['none', 'en_file', 'extrait', 'valide'] as const;
 export type StatutIngestion = (typeof STATUTS_INGESTION)[number];
+
+export const TYPES_FRANCHISE = ['surestaries', 'detention'] as const;
+export type TypeFranchise = (typeof TYPES_FRANCHISE)[number];

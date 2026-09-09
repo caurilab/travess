@@ -64,6 +64,33 @@ final class TenantContext
         $this->definirGuc('app.tenant_id', '');
     }
 
+    /**
+     * Exécute un traitement dans le contexte d'un tenant donné, puis restaure
+     * l'état précédent (imbrication sûre). C'est le point d'entrée des jobs,
+     * commandes et du scheduler : ils DOIVENT établir le contexte via cette
+     * méthode avant de toucher un modèle scopé, sinon le fail-closed s'applique.
+     *
+     * @template T
+     *
+     * @param  \Closure(): T  $callback
+     * @return T
+     */
+    public function pour(string $tenantId, \Closure $callback): mixed
+    {
+        $precedent = $this->tenantId;
+        $this->set($tenantId);
+
+        try {
+            return $callback();
+        } finally {
+            if ($precedent === null) {
+                $this->forget();
+            } else {
+                $this->set($precedent);
+            }
+        }
+    }
+
     public function isBypassed(): bool
     {
         return $this->bypassed;

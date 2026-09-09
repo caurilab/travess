@@ -6,6 +6,7 @@ namespace App\Providers;
 
 use App\Domains\Conteneurs\Models\Bl;
 use App\Domains\Conteneurs\Models\Conteneur;
+use App\Domains\Conteneurs\Models\Franchise;
 use App\Domains\Conteneurs\Policies\BlPolicy;
 use App\Domains\Conteneurs\Policies\ConteneurPolicy;
 use App\Domains\Documents\Models\Document;
@@ -16,6 +17,7 @@ use App\Domains\Dossiers\Policies\DossierPolicy;
 use App\Domains\Dossiers\Policies\EtapePolicy;
 use App\Domains\Identity\Models\User;
 use App\Domains\Identity\Policies\UserPolicy;
+use App\Domains\Surestaries\Policies\FranchisePolicy;
 use App\Shared\Context\TenantContext;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
@@ -47,5 +49,6 @@ final class DomainServiceProvider extends ServiceProvider
         Gate::policy(Bl::class, BlPolicy::class);
         Gate::policy(Conteneur::class, ConteneurPolicy::class);
         Gate::policy(Document::class, DocumentPolicy::class);
+        Gate::policy(Franchise::class, FranchisePolicy::class);
     }
 }

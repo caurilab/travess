@@ -13,4 +13,5 @@ export * from './client.js';
 export * from './dossier.js';
 export * from './conteneur.js';
 export * from './document.js';
+export * from './franchise.js';
 export * from './audit.js';

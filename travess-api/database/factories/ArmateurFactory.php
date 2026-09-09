@@ -28,9 +28,38 @@ final class ArmateurFactory extends Factory
             'nom_api' => strtoupper(str_replace([' ', '-'], '_', $nom)),
             'prefixes' => [strtoupper(fake()->lexify('???')).'U'],
             'trackable' => $nom !== 'Grimaldi',
-            'bareme_surestaries' => ['paliers' => [['jours' => 7, 'tarif' => 50], ['jours' => 14, 'tarif' => 100]]],
-            'bareme_detention' => ['paliers' => [['jours' => 5, 'tarif' => 40]]],
+            'bareme_surestaries' => self::baremeCanonique(),
+            'bareme_detention' => self::baremeCanonique(),
             'imap_config' => null,
+        ];
+    }
+
+    /**
+     * Barème au format canonique attendu par le calcul (paliers progressifs par
+     * type de conteneur, devise XOF, montants entiers).
+     *
+     * @return array<string, mixed>
+     */
+    public static function baremeCanonique(): array
+    {
+        return [
+            'devise' => 'XOF',
+            'paliers_par_type' => [
+                '20' => [
+                    ['de_jour' => 1, 'a_jour' => 5, 'tarif_jour' => 10000],
+                    ['de_jour' => 6, 'a_jour' => 10, 'tarif_jour' => 20000],
+                    ['de_jour' => 11, 'a_jour' => null, 'tarif_jour' => 35000],
+                ],
+                '40' => [
+                    ['de_jour' => 1, 'a_jour' => 5, 'tarif_jour' => 15000],
+                    ['de_jour' => 6, 'a_jour' => 10, 'tarif_jour' => 30000],
+                    ['de_jour' => 11, 'a_jour' => null, 'tarif_jour' => 50000],
+                ],
+                'defaut' => [
+                    ['de_jour' => 1, 'a_jour' => 10, 'tarif_jour' => 12000],
+                    ['de_jour' => 11, 'a_jour' => null, 'tarif_jour' => 25000],
+                ],
+            ],
         ];
     }
 }

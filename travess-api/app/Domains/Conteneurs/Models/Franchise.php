@@ -9,6 +9,7 @@ use App\Shared\Concerns\BelongsToTenant;
 use App\Shared\Models\BaseModel;
 use Database\Factories\FranchiseFactory;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 
 /**
@@ -24,8 +25,8 @@ use Illuminate\Support\Carbon;
  * @property Carbon $date_debut
  * @property int $jours_francs
  * @property Carbon|null $date_fin_franchise
- * @property string $montant_en_cours
- * @property string $montant_menacant
+ * @property int $montant_en_cours
+ * @property int $montant_menacant
  * @property bool $actif
  */
 final class Franchise extends BaseModel
@@ -50,10 +51,18 @@ final class Franchise extends BaseModel
             'date_debut' => 'date',
             'jours_francs' => 'integer',
             'date_fin_franchise' => 'date',
-            'montant_en_cours' => 'decimal:2',
-            'montant_menacant' => 'decimal:2',
+            'montant_en_cours' => 'integer', // XOF sans sous-unité
+            'montant_menacant' => 'integer',
             'actif' => 'boolean',
         ];
+    }
+
+    /**
+     * @return BelongsTo<Conteneur, $this>
+     */
+    public function conteneur(): BelongsTo
+    {
+        return $this->belongsTo(Conteneur::class);
     }
 
     protected static function newFactory(): Factory

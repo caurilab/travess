@@ -12,6 +12,7 @@ use App\Shared\Models\BaseModel;
 use Database\Factories\ConteneurFactory;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * Conteneur rattaché à un connaissement.
@@ -55,6 +56,14 @@ final class Conteneur extends BaseModel
     public function bl(): BelongsTo
     {
         return $this->belongsTo(Bl::class);
+    }
+
+    /**
+     * @return HasMany<Franchise, $this>
+     */
+    public function franchises(): HasMany
+    {
+        return $this->hasMany(Franchise::class);
     }
 
     protected static function newFactory(): Factory

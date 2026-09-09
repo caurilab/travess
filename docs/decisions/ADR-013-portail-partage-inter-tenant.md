@@ -56,5 +56,33 @@ Ces deux besoins doivent se concilier avec le **principe n°3** (le `tenant_id` 
 - `runBypassed` **proscrit en bloc sur le chemin portail** : l'accès inter-tenant passe par la politique RLS *grant-aware*, pas par une échappatoire système ; un repli éventuel reste **borné à une liste explicite de `dossier_id`**, jamais un bypass large.
 - **Mobile Money découplé** en sous-lot terminal **7.5** (paiement isolé du socle d'accès).
 
+## Amendement 7.3b — Assignation & migration de propriété (2026-09-10)
+
+Le sous-lot 7.3b (demande d'assignation client → transitaire, décision du transitaire, migration de propriété du dossier) précise et complète la décision sans la contredire.
+
+### Table inter-tenant `demande_assignation` — SECONDE exception documentée aux FK composites d'ADR-004
+Comme `acces_dossier` (point 6), la table `demande_assignation` **relie deux tenants** (le demandeur client et la cible transitaire) et constitue donc la **seconde exception documentée** aux FK composites `(id, tenant_id)` d'ADR-004 :
+- **pas de `BelongsToTenant`** ni d'auto-scoping par `TenantScope` ;
+- **RLS dédiée** : lecture ouverte au demandeur et à la cible ; **insertion réservée au demandeur** pour un dossier qu'il **possède ET qui est autonome** ; **décision ouverte aux deux parties** (dans leurs rôles respectifs) ;
+- **unicité partielle** : au plus **une demande pendante par dossier** (index unique partiel sur l'état pendant).
+
+### FK composites de l'agrégat dossier passées en `DEFERRABLE INITIALLY IMMEDIATE`
+Les FK composites `(id, tenant_id)` de l'agrégat dossier deviennent `DEFERRABLE INITIALLY IMMEDIATE` : **comportement inchangé hors migration** (vérification immédiate, comme aujourd'hui). Seule la transaction de re-tenant émet `SET CONSTRAINTS ALL DEFERRED` le temps de réécrire le `tenant_id` de l'agrégat, puis rétablit `IMMEDIATE` pour **valider la cohérence dans la même transaction** (aucune fenêtre d'incohérence visible hors transaction).
+
+### Migration de propriété (`MigrerProprieteDossier`)
+La bascule `autonome → gere_par_transitaire` (point 5) est réalisée par une Action transactionnelle et auditée :
+- **re-tenant de l'agrégat** dossier sous verrou, avec un **bypass borné au seul dossier** concerné (voir dette m2) ;
+- **remap de l'armateur** vers le tenant du transitaire ;
+- **régénération de la référence** du dossier (l'unicité de la référence est par tenant) ;
+- **fiche client créée chez le transitaire** ;
+- **octroi d'un `acces_dossier` de niveau `limite` actif** au client (BL + parcours) ;
+- **posture → `gere_par_transitaire`** ;
+- **audit bilatéral** (côté client cédant et côté transitaire repreneur).
+
+**Invariant anti-orphelin** : aucun enfant de l'agrégat ne doit rester dans l'ancien tenant. Il est **garanti par un test de complétude piloté par le schéma** (la liste des tables enfant à re-tenanter est dérivée du schéma, non figée à la main). Les entités **`dossier_user`, `paiements` et `invitation_portail` sont « gardées »** : leur présence attachée au dossier **fait refuser la migration** (elles ne sont pas migrées silencieusement).
+
+### Décision d'autorisation
+**Décider une assignation est réservé à la cible** (le transitaire destinataire de la demande), **vérifié explicitement** dans l'autorisation — un tiers ou le demandeur ne peut pas décider à sa place.
+
 ## Date
 2026-09-10

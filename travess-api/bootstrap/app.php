@@ -1,6 +1,7 @@
 <?php
 
 use App\Domains\Surestaries\Console\RafraichirSurestariesCommand;
+use App\Shared\Http\Middleware\EnsurePortailContext;
 use App\Shared\Http\Middleware\EnsureTenantContext;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -18,6 +19,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // Garde-fou multi-tenant, appliqué après auth:sanctum sur les routes protégées.
         $middleware->alias([
             'tenant' => EnsureTenantContext::class,
+            'portail' => EnsurePortailContext::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

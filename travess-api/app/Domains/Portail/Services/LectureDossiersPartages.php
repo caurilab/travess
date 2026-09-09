@@ -6,20 +6,20 @@ namespace App\Domains\Portail\Services;
 
 use App\Domains\Dossiers\Models\Dossier;
 use App\Shared\Scopes\TenantScope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 
 /**
  * Lecture des dossiers accessibles au bénéficiaire courant du portail (ADR-013).
  *
- * On lève délibérément le TenantScope (le dossier partagé appartient à un AUTRE
- * tenant que le workspace du client) : la sécurité repose alors sur la RLS de
- * partage « FOR SELECT » (dossier octroyé à app.portail_user_id) — fail-closed
- * en base. On ne réutilise JAMAIS la surface agent : ce read model n'expose que
- * ce que la RLS laisse passer, et les Resources portail projetteront en liste
- * blanche (BL + parcours) au sous-lot 7.1.
+ * On lève délibérément le TenantScope — sur le dossier ET sur toute sa
+ * projection (bls → conteneurs → parcours), qui appartiennent au tenant du
+ * transitaire, pas au workspace du client. La sécurité repose alors ENTIÈREMENT
+ * sur la RLS de partage « FOR SELECT » (fail-closed en base) : sans octroi actif
+ * ni contexte portail, rien ne remonte. La projection en liste blanche (champs
+ * exposés) est faite par les Resources portail, jamais par un modèle brut.
  *
- * Prérequis : le contexte portail doit être établi (TenantContext::setPortailUser
- * via le middleware portail). Sans lui, la RLS ne renvoie rien.
+ * Prérequis : contexte portail établi (middleware « portail » → app.portail_user_id).
  */
 final class LectureDossiersPartages
 {
@@ -28,16 +28,32 @@ final class LectureDossiersPartages
      */
     public function accessibles(): Collection
     {
-        return Dossier::query()
-            ->withoutGlobalScope(TenantScope::class)
-            ->get();
+        return $this->requeteProjetee()->get();
     }
 
     public function trouver(string $dossierId): ?Dossier
     {
+        return $this->requeteProjetee()->whereKey($dossierId)->first();
+    }
+
+    /**
+     * Requête dossiers + projection partageable, TenantScope levé à chaque
+     * niveau (la RLS de partage filtre les lignes réellement octroyées).
+     *
+     * @return Builder<Dossier>
+     */
+    private function requeteProjetee(): Builder
+    {
         return Dossier::query()
             ->withoutGlobalScope(TenantScope::class)
-            ->whereKey($dossierId)
-            ->first();
+            ->with(['bls' => function ($query): void {
+                $query->withoutGlobalScope(TenantScope::class)
+                    ->with(['conteneurs' => function ($query): void {
+                        $query->withoutGlobalScope(TenantScope::class)
+                            ->with(['suivis' => function ($query): void {
+                                $query->withoutGlobalScope(TenantScope::class);
+                            }]);
+                    }]);
+            }]);
     }
 }

@@ -66,6 +66,14 @@ final class Conteneur extends BaseModel
         return $this->hasMany(Franchise::class);
     }
 
+    /**
+     * @return HasMany<SuiviTracking, $this>
+     */
+    public function suivis(): HasMany
+    {
+        return $this->hasMany(SuiviTracking::class);
+    }
+
     protected static function newFactory(): Factory
     {
         return ConteneurFactory::new();

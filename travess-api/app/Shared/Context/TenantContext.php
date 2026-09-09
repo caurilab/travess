@@ -30,9 +30,21 @@ final class TenantContext
      */
     private bool $bypassed = false;
 
+    /**
+     * Bénéficiaire d'accès partagé courant (portail). Alimente le GUC
+     * « app.portail_user_id » pour la RLS de partage (ADR-013). Posé par le
+     * middleware portail depuis l'utilisateur authentifié, jamais par le client.
+     */
+    private ?string $portailUserId = null;
+
     public function id(): ?string
     {
         return $this->tenantId;
+    }
+
+    public function portailUserId(): ?string
+    {
+        return $this->portailUserId;
     }
 
     public function hasTenant(): bool
@@ -62,6 +74,53 @@ final class TenantContext
     {
         $this->tenantId = null;
         $this->definirGuc('app.tenant_id', '');
+
+        // On ne laisse jamais traîner un bénéficiaire de partage au-delà de la
+        // requête : sous runtime persistant, un app.portail_user_id résiduel
+        // rouvrirait des dossiers partagés à la requête suivante.
+        $this->forgetPortailUser();
+    }
+
+    /**
+     * Positionne le bénéficiaire de partage courant (portail). Réservé au
+     * middleware portail : la valeur vient de l'utilisateur authentifié.
+     */
+    public function setPortailUser(string $userId): void
+    {
+        $this->portailUserId = $userId;
+        $this->definirGuc('app.portail_user_id', $userId);
+    }
+
+    public function forgetPortailUser(): void
+    {
+        $this->portailUserId = null;
+        $this->definirGuc('app.portail_user_id', '');
+    }
+
+    /**
+     * Exécute un traitement dans le contexte d'accès partagé d'un bénéficiaire,
+     * puis restaure l'état précédent (imbrication sûre). Point d'entrée du
+     * middleware portail et des tests d'étanchéité de partage.
+     *
+     * @template T
+     *
+     * @param  \Closure(): T  $callback
+     * @return T
+     */
+    public function sousPortail(string $portailUserId, \Closure $callback): mixed
+    {
+        $precedent = $this->portailUserId;
+        $this->setPortailUser($portailUserId);
+
+        try {
+            return $callback();
+        } finally {
+            if ($precedent === null) {
+                $this->forgetPortailUser();
+            } else {
+                $this->setPortailUser($precedent);
+            }
+        }
     }
 
     /**

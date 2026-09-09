@@ -9,13 +9,17 @@ use App\Domains\Messagerie\Data\MessageSortant;
 use App\Domains\Messagerie\Enums\CanalMessage;
 use App\Domains\Messagerie\Support\FabriqueExpediteur;
 use App\Shared\Jobs\JobTenantScoped;
+use Illuminate\Contracts\Queue\ShouldBeEncrypted;
 
 /**
  * Envoi (en file, principe n°4) du lien d'invitation sur le canal choisi, via
- * l'expéditeur isolé (principe n°9). Le lien signé et le destinataire (PII) ne
- * transitent que dans la charge du job, jamais dans les logs applicatifs.
+ * l'expéditeur isolé (principe n°9).
+ *
+ * Charge CHIFFRÉE (ShouldBeEncrypted, audit 7.2a M2) : le lien porte le token
+ * secret et le destinataire est une PII — ni l'un ni l'autre ne doit apparaître
+ * en clair dans la file ni dans `failed_jobs`.
  */
-final class EnvoyerInvitation extends JobTenantScoped
+final class EnvoyerInvitation extends JobTenantScoped implements ShouldBeEncrypted
 {
     public function __construct(
         string $tenantId,

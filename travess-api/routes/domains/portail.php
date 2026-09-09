@@ -22,8 +22,8 @@ Route::middleware(['auth:sanctum', 'tenant', 'portail'])->prefix('portail')->gro
     Route::get('dossiers/{dossier}', [PortailDossierController::class, 'show']);
 });
 
-// 2. Émission d'invitations par le transitaire.
-Route::middleware(['auth:sanctum', 'tenant'])->group(function (): void {
+// 2. Émission d'invitations par le transitaire (throttle + plafond par tenant).
+Route::middleware(['auth:sanctum', 'tenant', 'throttle:30,1'])->group(function (): void {
     Route::post('dossiers/{dossier}/invitations', [InvitationController::class, 'emettre']);
 });
 
@@ -34,6 +34,9 @@ Route::prefix('portail')->group(function (): void {
         ->middleware(['signed', 'throttle:10,1', 'invitation'])
         ->name('portail.invitation.montrer');
 
+    // Non « signed » : le secret est le token 256 bits (dans le chemin), borné
+    // par expire_at + OTP + usage unique. Émettre une seconde URL signée pour le
+    // POST n'ajouterait pas de protection (le token EST déjà le secret).
     Route::post('invitations/{token}/confirmer', [OnboardingController::class, 'confirmer'])
         ->middleware(['throttle:10,1', 'invitation']);
 });

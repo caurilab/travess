@@ -113,6 +113,25 @@ final class TenantContext
     }
 
     /**
+     * Remet TOUS les GUC de session à vide (fail-closed). À poser en tête des
+     * chemins publics (sans middleware tenant) : sous runtime persistant/pooler,
+     * un app.tenant_id / app.bypass_rls / app.portail_user_id résiduel d'une
+     * requête précédente élargirait la RLS. On ne suppose jamais un état propre.
+     */
+    public function reinitialiser(): void
+    {
+        $this->tenantId = null;
+        $this->portailUserId = null;
+        $this->invitationTokenHash = null;
+        $this->bypassed = false;
+
+        $this->definirGuc('app.tenant_id', '');
+        $this->definirGuc('app.portail_user_id', '');
+        $this->definirGuc('app.invitation_token_hash', '');
+        $this->definirGuc('app.bypass_rls', '');
+    }
+
+    /**
      * Positionne le bénéficiaire de partage courant (portail). Réservé au
      * middleware portail : la valeur vient de l'utilisateur authentifié.
      */

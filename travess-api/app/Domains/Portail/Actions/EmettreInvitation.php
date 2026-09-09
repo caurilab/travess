@@ -13,8 +13,10 @@ use App\Domains\Portail\Models\InvitationPortail;
 use App\Shared\Context\TenantContext;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\URL;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 /**
  * Émet une invitation d'onboarding (transitaire → client) : crée l'invitation
@@ -35,6 +37,8 @@ final class EmettreInvitation
      */
     public function executer(Dossier $dossier, array $donnees): array
     {
+        $this->plafonnerParTenant();
+
         $tokenBrut = $this->genererToken();
         $expire = Carbon::now()->addHours((int) config('messagerie.invitation.ttl_heures'));
 
@@ -66,6 +70,22 @@ final class EmettreInvitation
 
             return ['invitation' => $invitation, 'lien' => $lien];
         });
+    }
+
+    /**
+     * Plafond d'émissions par tenant et par heure (anti-abus / coût messagerie).
+     */
+    private function plafonnerParTenant(): void
+    {
+        $cle = 'invitation:emission:'.$this->tenant->idOrFail();
+        $max = (int) config('messagerie.invitation.emission_max_par_tenant_heure');
+
+        if ((int) Cache::get($cle, 0) >= $max) {
+            throw new HttpException(429, "Plafond d'invitations atteint pour cette période.");
+        }
+
+        Cache::add($cle, 0, 3600);
+        Cache::increment($cle);
     }
 
     private function genererToken(): string

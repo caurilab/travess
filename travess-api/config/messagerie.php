@@ -24,6 +24,7 @@ return [
         'tentatives_max' => 5,
         'verrou_secondes' => 900,    // 15 min
         'envois_max_par_numero_heure' => 5,
+        'emissions_max_par_invitation' => 5,
         // Code fixe en test/factice (null → dérivé déterministe du contexte).
         'code_factice' => env('OTP_CODE_FACTICE', '123456'),
     ],

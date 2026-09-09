@@ -10,12 +10,17 @@ use App\Domains\Messagerie\Data\DefiOtp;
 use App\Domains\Messagerie\Enums\ResultatVerificationOtp;
 use Illuminate\Contracts\Cache\Repository as Cache;
 use Illuminate\Support\Carbon;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 /**
- * OTP factice : code déterministe (config messagerie.otp.code_factice), sans
- * réseau, MAIS cycle de vie complet exercé (expiration via TTL du cache, plafond
- * de tentatives, verrouillage, liaison à l'invitation). L'état vit dans le cache
- * pour survivre entre la requête de réclamation et celle de confirmation.
+ * OTP factice : code déterministe (config), sans réseau, MAIS cycle de vie
+ * complet et RÉSISTANT À L'ABUS (audit 7.2a, M1) :
+ *  - tentatives comptées de façon PERSISTANTE (au-delà du TTL du code) et NON
+ *    réinitialisées à la réémission ;
+ *  - verrou effectif de `verrou_secondes` une fois le plafond atteint ;
+ *  - plafond d'émissions par numéro/heure et par invitation (anti SMS-pumping).
+ *
+ * L'état vit dans le cache pour survivre entre les requêtes publiques.
  */
 final class ServiceOtpFactice implements ServiceOtp
 {
@@ -23,14 +28,28 @@ final class ServiceOtpFactice implements ServiceOtp
 
     public function emettre(string $telephone, ContexteOtp $contexte): DefiOtp
     {
+        if ($this->cache->get($this->cleVerrou($contexte)) !== null) {
+            throw new HttpException(429, 'Trop de tentatives, réessayez plus tard.');
+        }
+
+        $this->plafonner(
+            $this->cleEmissionsInvitation($contexte),
+            (int) config('messagerie.otp.emissions_max_par_invitation'),
+            (int) config('messagerie.otp.verrou_secondes'),
+        );
+        $this->plafonner(
+            $this->cleEmissionsNumero($telephone),
+            (int) config('messagerie.otp.envois_max_par_numero_heure'),
+            3600,
+        );
+
         $ttl = (int) config('messagerie.otp.ttl_secondes');
         $expire = Carbon::now()->addSeconds($ttl);
 
-        $this->cache->put($this->cle($contexte), [
+        // On (ré)émet le code sans jamais remettre le compteur de tentatives à 0.
+        $this->cache->put($this->cleCode($contexte), [
             'code' => (string) config('messagerie.otp.code_factice', '123456'),
             'telephone' => $telephone,
-            'tentatives' => 0,
-            'expire' => $expire->getTimestamp(),
         ], $expire);
 
         return new DefiOtp($contexte->invitationId, $expire);
@@ -38,36 +57,75 @@ final class ServiceOtpFactice implements ServiceOtp
 
     public function verifier(string $telephone, string $code, ContexteOtp $contexte): ResultatVerificationOtp
     {
-        /** @var array{code: string, telephone: string, tentatives: int, expire: int}|null $etat */
-        $etat = $this->cache->get($this->cle($contexte));
-
-        if ($etat === null) {
-            return ResultatVerificationOtp::Expire;
-        }
-
-        if ($etat['tentatives'] >= (int) config('messagerie.otp.tentatives_max')) {
+        if ($this->cache->get($this->cleVerrou($contexte)) !== null) {
             return ResultatVerificationOtp::Verrouille;
         }
 
-        $bon = hash_equals($etat['code'], $code) && hash_equals($etat['telephone'], $telephone);
+        /** @var array{code: string, telephone: string}|null $defi */
+        $defi = $this->cache->get($this->cleCode($contexte));
 
-        if (! $bon) {
-            $etat['tentatives']++;
-            $this->cache->put($this->cle($contexte), $etat, Carbon::createFromTimestamp($etat['expire']));
-
-            return $etat['tentatives'] >= (int) config('messagerie.otp.tentatives_max')
-                ? ResultatVerificationOtp::Verrouille
-                : ResultatVerificationOtp::Invalide;
+        if ($defi === null) {
+            return ResultatVerificationOtp::Expire;
         }
 
-        // Usage unique : le défi validé est consommé.
-        $this->cache->forget($this->cle($contexte));
+        if (hash_equals($defi['code'], $code) && hash_equals($defi['telephone'], $telephone)) {
+            $this->cache->forget($this->cleCode($contexte));
+            $this->cache->forget($this->cleTentatives($contexte));
 
-        return ResultatVerificationOtp::Valide;
+            return ResultatVerificationOtp::Valide;
+        }
+
+        $tentatives = (int) $this->cache->get($this->cleTentatives($contexte), 0) + 1;
+        $max = (int) config('messagerie.otp.tentatives_max');
+        $verrou = (int) config('messagerie.otp.verrou_secondes');
+
+        $this->cache->put($this->cleTentatives($contexte), $tentatives, $verrou);
+
+        if ($tentatives >= $max) {
+            $this->cache->put($this->cleVerrou($contexte), true, $verrou);
+            $this->cache->forget($this->cleCode($contexte));
+
+            return ResultatVerificationOtp::Verrouille;
+        }
+
+        return ResultatVerificationOtp::Invalide;
     }
 
-    private function cle(ContexteOtp $contexte): string
+    private function plafonner(string $cle, int $max, int $ttl): void
     {
-        return 'otp:factice:'.$contexte->invitationId;
+        $compteur = (int) $this->cache->get($cle, 0);
+
+        if ($compteur >= $max) {
+            throw new HttpException(429, 'Plafond d’envois OTP atteint, réessayez plus tard.');
+        }
+
+        // add() pose le TTL au premier passage ; increment() garde la fenêtre.
+        $this->cache->add($cle, 0, $ttl);
+        $this->cache->increment($cle);
+    }
+
+    private function cleCode(ContexteOtp $c): string
+    {
+        return 'otp:code:'.$c->invitationId;
+    }
+
+    private function cleTentatives(ContexteOtp $c): string
+    {
+        return 'otp:tentatives:'.$c->invitationId;
+    }
+
+    private function cleVerrou(ContexteOtp $c): string
+    {
+        return 'otp:verrou:'.$c->invitationId;
+    }
+
+    private function cleEmissionsInvitation(ContexteOtp $c): string
+    {
+        return 'otp:emissions:'.$c->invitationId;
+    }
+
+    private function cleEmissionsNumero(string $telephone): string
+    {
+        return 'otp:numero:'.hash('sha256', $telephone);
     }
 }

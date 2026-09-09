@@ -14,11 +14,13 @@ use App\Domains\Identity\Models\User;
 use App\Domains\Messagerie\Adapters\ExpediteurFactice;
 use App\Domains\Portail\Enums\StatutAcces;
 use App\Domains\Portail\Enums\StatutInvitation;
+use App\Domains\Portail\Jobs\EnvoyerInvitation;
 use App\Domains\Portail\Models\InvitationPortail;
 use App\Domains\Tenancy\Enums\TypeTenant;
 use App\Domains\Tenancy\Models\Client;
 use App\Domains\Tenancy\Models\Tenant;
 use App\Shared\Scopes\TenantScope;
+use Illuminate\Contracts\Queue\ShouldBeEncrypted;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\Support\InteragitAvecLeTenant;
@@ -167,6 +169,45 @@ final class OnboardingTest extends TestCase
 
         $this->postJson("/api/v1/portail/invitations/{$token}/confirmer", ['code_otp' => '123456'])
             ->assertStatus(409);
+    }
+
+    public function test_otp_verrouille_persiste_malgre_reemission(): void
+    {
+        $lien = $this->emettre();
+        $token = $this->cheminToken($lien);
+        $this->getJson($lien)->assertOk();
+
+        // 5 mauvais codes → verrouillage (le compteur n'est pas réinitialisé).
+        for ($i = 0; $i < 5; $i++) {
+            $this->postJson("/api/v1/portail/invitations/{$token}/confirmer", ['code_otp' => '000000'])
+                ->assertStatus(422);
+        }
+
+        // Une réémission est refusée (429), et le bon code ne passe plus.
+        $this->getJson($lien)->assertStatus(429);
+        $this->postJson("/api/v1/portail/invitations/{$token}/confirmer", ['code_otp' => '123456'])
+            ->assertStatus(422);
+    }
+
+    public function test_plafond_d_emission_par_tenant(): void
+    {
+        config(['messagerie.invitation.emission_max_par_tenant_heure' => 1]);
+        Sanctum::actingAs($this->gerant);
+
+        $charge = ['canal' => 'whatsapp', 'destinataire' => self::TELEPHONE];
+        $this->postJson("/api/v1/dossiers/{$this->dossierId}/invitations", $charge)->assertStatus(202);
+        $this->postJson("/api/v1/dossiers/{$this->dossierId}/invitations", $charge)->assertStatus(429);
+    }
+
+    public function test_le_job_d_envoi_chiffre_sa_charge(): void
+    {
+        // La charge (lien = token secret, destinataire = PII) ne doit jamais être
+        // sérialisée en clair dans la file / failed_jobs.
+        $job = new EnvoyerInvitation(
+            $this->transitaire->id, 'whatsapp', self::TELEPHONE, 'https://x/portail', 'REF-1',
+        );
+
+        $this->assertInstanceOf(ShouldBeEncrypted::class, $job);
     }
 
     private function cheminToken(string $lien): string

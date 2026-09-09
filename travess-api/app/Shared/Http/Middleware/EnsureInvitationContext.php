@@ -29,6 +29,10 @@ final class EnsureInvitationContext
         }
 
         $contexte = app(TenantContext::class);
+
+        // Chemin public sans middleware tenant : on part d'un état GUC vide
+        // (fail-closed) avant de borner la lecture au seul token présenté.
+        $contexte->reinitialiser();
         $contexte->setInvitationToken(hash('sha256', $token));
 
         try {

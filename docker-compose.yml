@@ -13,12 +13,16 @@ services:
 
   postgres:
     image: postgres:16
+    # L'admin est le superutilisateur « postgres ». Le rôle applicatif
+    # « travess » est créé NOSUPERUSER par le script d'init (ops/postgres/init),
+    # condition pour que la Row-Level Security s'applique réellement (ADR-004).
     environment:
-      POSTGRES_DB: ${DB_DATABASE:-travess}
-      POSTGRES_USER: ${DB_USERNAME:-travess}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-secret}
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_ADMIN_PASSWORD:-adminsecret}
+      POSTGRES_DB: postgres
     volumes:
       - pgdata:/var/lib/postgresql/data
+      - ./ops/postgres/init:/docker-entrypoint-initdb.d:ro
     ports:
       - "5432:5432"
 

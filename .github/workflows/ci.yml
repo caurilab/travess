@@ -47,14 +47,17 @@ jobs:
     services:
       postgres:
         image: postgres:16
+        # Admin = superutilisateur postgres. Le rôle applicatif « travess » est
+        # créé NOSUPERUSER à l'étape de provisionnement, condition pour que la
+        # RLS s'applique réellement (un superutilisateur la contourne). ADR-004.
         env:
-          POSTGRES_USER: travess
-          POSTGRES_PASSWORD: secret
-          POSTGRES_DB: travess
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
         ports:
           - 5432:5432
         options: >-
-          --health-cmd "pg_isready -U travess"
+          --health-cmd "pg_isready -U postgres"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
@@ -98,8 +101,11 @@ jobs:
           cp .env.example .env
           php artisan key:generate
 
-      - name: Créer la base de test
-        run: PGPASSWORD=secret psql -h 127.0.0.1 -U travess -c 'CREATE DATABASE travess_test;'
+      - name: Provisionner le rôle applicatif (NOSUPERUSER) et les bases
+        run: |
+          PGPASSWORD=postgres psql -h 127.0.0.1 -U postgres -c "CREATE ROLE travess LOGIN PASSWORD 'secret' NOSUPERUSER NOCREATEDB NOCREATEROLE;"
+          PGPASSWORD=postgres psql -h 127.0.0.1 -U postgres -c "CREATE DATABASE travess OWNER travess;"
+          PGPASSWORD=postgres psql -h 127.0.0.1 -U postgres -c "CREATE DATABASE travess_test OWNER travess;"
 
       - name: Vérifier les migrations (ordre + RLS)
         run: php artisan migrate --force

@@ -1,0 +1,13 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+
+parameters:
+    # Niveau 5 comme baseline du Lot 0 (à monter progressivement). Larastan
+    # couvre le typage Eloquent (propriétés magiques, relations).
+    level: 5
+    paths:
+        - app
+        - database
+    excludePaths:
+        # Actions générées par Fortify (scaffolding stock, non utilisées en API pure).
+        - app/Actions/Fortify/*

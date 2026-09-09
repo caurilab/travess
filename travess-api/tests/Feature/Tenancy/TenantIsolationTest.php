@@ -122,7 +122,7 @@ final class TenantIsolationTest extends TestCase
             }
 
             /** @var Model $instance */
-            $instance = new $classe();
+            $instance = new $classe;
 
             if (! Schema::hasColumn($instance->getTable(), 'tenant_id')) {
                 continue;

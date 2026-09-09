@@ -23,8 +23,13 @@ final class CanalEmail implements CanalEnvoi
 
     public function envoyer(User $destinataire, Alerte $alerte): StatutNotification
     {
-        Mail::to($destinataire->email)->queue(new AlerteMail($alerte));
+        // Primitives (pas le modèle) : délivrable par un worker hors contexte tenant.
+        Mail::to($destinataire->email)->queue(
+            new AlerteMail($alerte->type->value, (int) $alerte->montant_menacant),
+        );
 
-        return StatutNotification::Envoye;
+        // Mis en file : la remise effective est asynchrone (statut « en_attente »
+        // tant qu'elle n'est pas confirmée — confirmation de remise = raffinement).
+        return StatutNotification::EnAttente;
     }
 }

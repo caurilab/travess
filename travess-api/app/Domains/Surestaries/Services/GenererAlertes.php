@@ -13,6 +13,7 @@ use App\Domains\Conteneurs\Enums\TypeFranchise;
 use App\Domains\Conteneurs\Models\Franchise;
 use App\Shared\Context\TenantContext;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Génère les alertes de surestaries/détention (J-3 / J-1 / J0 avant la fin de
@@ -44,20 +45,30 @@ final class GenererAlertes
                     return;
                 }
 
-                $alerte = Alerte::firstOrCreate(
-                    ['conteneur_id' => $franchise->conteneur_id, 'type' => $type->value],
-                    [
-                        'dossier_id' => $franchise->conteneur->bl->dossier_id,
-                        'montant_menacant' => $franchise->montant_menacant,
-                        'statut' => StatutAlerte::Ouverte->value,
-                        'canaux_envoyes' => [],
-                    ],
-                );
+                // Création + audit dans une même transaction (invariant ADR-007).
+                $alerte = DB::transaction(function () use ($franchise, $type, &$creees): Alerte {
+                    $alerte = Alerte::firstOrCreate(
+                        ['conteneur_id' => $franchise->conteneur_id, 'type' => $type->value],
+                        [
+                            'dossier_id' => $franchise->conteneur->bl->dossier_id,
+                            'montant_menacant' => $franchise->montant_menacant,
+                            'statut' => StatutAlerte::Ouverte->value,
+                            'canaux_envoyes' => [],
+                        ],
+                    );
 
-                if ($alerte->wasRecentlyCreated) {
-                    $creees++;
-                    $this->auditeur->creation($alerte, 'alerte.generee');
-                    // Envoi multi-canal en file (principe n°4).
+                    if ($alerte->wasRecentlyCreated) {
+                        $creees++;
+                        $this->auditeur->creation($alerte, 'alerte.generee');
+                    }
+
+                    return $alerte;
+                });
+
+                // Envoi en file (principe n°4), y compris pour une alerte ouverte
+                // jamais dispatchée (ex. envoi précédent échoué) — EnvoyerAlerte
+                // est idempotent.
+                if ($alerte->statut === StatutAlerte::Ouverte && $alerte->canaux_envoyes === []) {
                     EnvoyerAlerte::dispatch($this->tenant->idOrFail(), $alerte->id);
                 }
             });
@@ -69,10 +80,13 @@ final class GenererAlertes
     {
         $joursRestants = (int) $aujourdhui->diffInDays($franchise->date_fin_franchise->copy()->startOfDay(), false);
 
+        // Seuils en « <= » (et non égalité stricte) : si un run quotidien est
+        // manqué, l'alerte du palier est tout de même créée à la prochaine
+        // occasion (l'unicité (conteneur, type) empêche les doublons).
         $seuil = match (true) {
             $joursRestants <= 0 => 'j0',
-            $joursRestants === 1 => 'j1',
-            $joursRestants === 3 => 'j3',
+            $joursRestants <= 1 => 'j1',
+            $joursRestants <= 3 => 'j3',
             default => null,
         };
 

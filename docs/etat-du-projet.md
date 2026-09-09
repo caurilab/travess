@@ -77,6 +77,9 @@
 - **Filtrage des secrets** dans `avant`/`apres` de l'audit avant le lot paiement (F-2).
 - **Raffinement RBAC** « agent = dossiers assignés » (au Lot 1, l'isolation dure est le tenant).
 - **Résumés finances/transport** du détail dossier : placeholders (0/null) à remplacer par les vraies valeurs aux lots 3/4+.
+- **Confirmation de remise e-mail** : la notification e-mail reste « en_attente » (mise en file) ; un listener `MessageSent` la passera à « envoyé » (raffinement).
+- **`/alertes/preferences`** (édition des canaux de notification) : reporté (les préférences sont déjà lues par l'envoi).
+- **Gel exact du `montant_en_cours`** à la sortie : nécessiterait la date de sortie réelle du conteneur (aujourd'hui : dernière valeur active, ou estimation courante). À affiner avec le tracking (Lot 4).
 
 ## À faire — prochaines actions
 

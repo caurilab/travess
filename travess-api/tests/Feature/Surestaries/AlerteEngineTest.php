@@ -98,9 +98,37 @@ final class AlerteEngineTest extends TestCase
         $this->pourTenant($tenant, function () use ($gerant): void {
             $this->assertTrue(
                 Notification::where('destinataire_id', $gerant->id)
-                    ->where('canal', 'email')->where('statut', 'envoye')->exists(),
+                    ->where('canal', 'email')->where('statut', 'en_attente')->exists(),
             );
             $this->assertContains('email', Alerte::first()?->canaux_envoyes ?? []);
+        });
+    }
+
+    public function test_le_dispatch_est_idempotent(): void
+    {
+        Mail::fake();
+        [$tenant, $gerant] = $this->contexteAvecFranchise();
+
+        RafraichirSurestaries::dispatch($tenant->id);
+        RafraichirSurestaries::dispatch($tenant->id); // rejeu
+
+        Mail::assertQueued(AlerteMail::class, 1); // un seul e-mail malgré 2 runs
+
+        $this->pourTenant($tenant, function () use ($gerant): void {
+            $this->assertSame(1, Notification::where('destinataire_id', $gerant->id)->where('canal', 'email')->count());
+        });
+    }
+
+    public function test_le_seuil_j3_se_declenche_meme_apres_un_run_manque(): void
+    {
+        [$tenant, , $conteneurId] = $this->contexteAvecFranchise();
+
+        // On est à J-2 (le run de J-3 a été manqué) : le palier j3 doit tomber.
+        Carbon::setTestNow('2026-01-05');
+        RafraichirSurestaries::dispatch($tenant->id);
+
+        $this->pourTenant($tenant, function () use ($conteneurId): void {
+            $this->assertSame('surestaries_j3', Alerte::where('conteneur_id', $conteneurId)->first()?->type->value);
         });
     }
 

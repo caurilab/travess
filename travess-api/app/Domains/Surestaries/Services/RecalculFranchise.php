@@ -52,11 +52,18 @@ final class RecalculFranchise
                 'actif' => true,
             ]);
         } else {
-            // Conteneur sorti : on FIGE le montant en cours à sa dernière valeur
-            // (coût réellement accumulé jusqu'à la sortie) et il n'y a plus de
-            // menace. Base de la métrique « surestaries évitées ».
+            // Conteneur sorti : on FIGE le montant en cours et il n'y a plus de
+            // menace. On conserve la dernière valeur active persistée ; si elle
+            // n'a jamais été calculée (1er recalcul déjà inactif), on prend la
+            // meilleure estimation à la date d'évaluation courante (évite un 0
+            // trompeur qui surévaluerait « surestaries évitées »).
+            $enCours = $franchise->montant_en_cours > 0
+                ? $franchise->montant_en_cours
+                : $resultat['montant_en_cours'];
+
             $franchise->forceFill([
                 'date_fin_franchise' => $resultat['date_fin_franchise'],
+                'montant_en_cours' => $enCours,
                 'montant_menacant' => 0,
                 'actif' => false,
             ]);

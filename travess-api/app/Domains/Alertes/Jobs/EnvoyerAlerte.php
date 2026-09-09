@@ -14,6 +14,7 @@ use App\Domains\Identity\Models\User;
 use App\Shared\Jobs\JobTenantScoped;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Envoie une alerte sur les canaux configurés, à ses destinataires (agents
@@ -36,27 +37,47 @@ final class EnvoyerAlerte extends JobTenantScoped
         }
 
         $fabrique = app(FabriqueCanal::class);
-        $canauxEnvoyes = $alerte->canaux_envoyes;
 
-        foreach ($this->destinataires($alerte) as $destinataire) {
-            foreach ($this->canaux($destinataire) as $canal) {
-                $statut = $fabrique->pour($canal)->envoyer($destinataire, $alerte);
+        DB::transaction(function () use ($alerte, $fabrique): void {
+            $canauxTraites = $alerte->canaux_envoyes;
 
-                Notification::create([
-                    'destinataire_id' => $destinataire->id,
-                    'canal' => $canal->value,
-                    'type_evenement' => $alerte->type->value,
-                    'statut' => $statut->value,
-                    'sujet' => "Alerte {$alerte->type->value}",
-                    'meta' => ['alerte_id' => $alerte->id],
-                    'envoye_at' => $statut === StatutNotification::Envoye ? Carbon::now() : null,
-                ]);
+            foreach ($this->destinataires($alerte) as $destinataire) {
+                foreach ($this->canaux($destinataire) as $canal) {
+                    // Idempotence : une seule notification par (destinataire, canal,
+                    // alerte). Un rejeu du job ne recrée rien et ne ré-émet pas.
+                    $notification = Notification::firstOrCreate(
+                        [
+                            'destinataire_id' => $destinataire->id,
+                            'canal' => $canal->value,
+                            'alerte_id' => $alerte->id,
+                        ],
+                        [
+                            'type_evenement' => $alerte->type->value,
+                            'statut' => StatutNotification::EnAttente->value,
+                            'sujet' => "Alerte {$alerte->type->value}",
+                            'meta' => ['alerte_id' => $alerte->id],
+                        ],
+                    );
 
-                $canauxEnvoyes[] = $canal->value;
+                    // Envoi réel une seule fois (à la création de la notification).
+                    if ($notification->wasRecentlyCreated) {
+                        $statut = $fabrique->pour($canal)->envoyer($destinataire, $alerte);
+
+                        if ($statut !== StatutNotification::EnAttente) {
+                            $notification->forceFill([
+                                'statut' => $statut->value,
+                                'envoye_at' => $statut === StatutNotification::Envoye ? Carbon::now() : null,
+                            ])->save();
+                        }
+                    }
+
+                    $canauxTraites[] = $canal->value;
+                }
             }
-        }
 
-        $alerte->forceFill(['canaux_envoyes' => array_values(array_unique($canauxEnvoyes))])->save();
+            // Canaux dispatchés (pour éviter un re-dispatch par le moteur).
+            $alerte->forceFill(['canaux_envoyes' => array_values(array_unique($canauxTraites))])->save();
+        });
     }
 
     /**

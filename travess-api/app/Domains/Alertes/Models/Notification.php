@@ -18,6 +18,7 @@ use Illuminate\Support\Carbon;
  * @property string $id
  * @property string $tenant_id
  * @property string|null $destinataire_id
+ * @property string|null $alerte_id
  * @property CanalNotification $canal
  * @property string $type_evenement
  * @property StatutNotification $statut
@@ -31,6 +32,7 @@ final class Notification extends BaseModel
 
     protected $fillable = [
         'destinataire_id',
+        'alerte_id',
         'canal',
         'type_evenement',
         'statut',

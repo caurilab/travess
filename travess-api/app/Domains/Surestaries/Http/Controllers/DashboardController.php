@@ -80,15 +80,22 @@ final class DashboardController
                 $menacantParCle[$cle] = max($menacantParCle[$cle] ?? 0, (int) $alerte->montant_menacant);
             });
 
+        // Chargement des franchises concernées en une seule passe (pas de N+1).
+        $conteneurIds = collect(array_keys($menacantParCle))
+            ->map(static fn (string $cle): string => explode('|', $cle)[0])
+            ->unique()
+            ->all();
+
+        $franchises = Franchise::query()
+            ->whereIn('conteneur_id', $conteneurIds)
+            ->get()
+            ->keyBy(static fn (Franchise $f): string => $f->conteneur_id.'|'.$f->type->value);
+
         $montantEvite = 0;
         $nombre = 0;
 
         foreach ($menacantParCle as $cle => $menacant) {
-            [$conteneurId, $typeFranchise] = explode('|', $cle);
-
-            $franchise = Franchise::where('conteneur_id', $conteneurId)
-                ->where('type', $typeFranchise)
-                ->first();
+            $franchise = $franchises->get($cle);
 
             // Conteneur sorti (franchise inactive) : la menace ne s'est pas réalisée.
             if ($franchise !== null && ! $franchise->actif) {

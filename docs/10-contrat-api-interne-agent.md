@@ -59,19 +59,22 @@ GET    /tracking/etat                         → quota (E10), plafond, mode (au
 
 ## 7. Surestaries & franchises
 ```
-GET    /conteneurs/{id}/franchises            → surestaries + détention, montants
+GET    /conteneurs/{id}/franchises            → surestaries + détention, montants (recalcul frais)
+POST   /conteneurs/{id}/franchises            → définir une franchise (type, date_debut, jours_francs)
 PATCH  /franchises/{id}                       → ajuster date_debut / jours_francs
-GET    /dashboard/argent-en-feu               → conteneurs à risque, montant menaçant cumulé
+GET    /dashboard/argent-en-feu               → conteneurs à risque (top 50), montant menaçant cumulé
 GET    /dashboard/surestaries-evitees         → métrique de valeur (mois courant)
 ```
+> Lot 2. La franchise naît quand l'agent pose `date_debut`+`jours_francs` (source manuelle) ; les lots 4 (tracking) et 5 (IA) alimenteront la même Action `DefinirFranchise`. Montants entiers XOF. `argent-en-feu` liste le top 50 par montant menaçant ; les cumuls portent sur l'ensemble.
 
 ## 8. Alertes
 ```
 GET    /alertes                    → liste (type, statut)
 PATCH  /alertes/{id}               → marquer vue / traitée
-GET    /alertes/preferences        → canaux par type
-PATCH  /alertes/preferences
+GET    /alertes/preferences        → canaux par type  — reporté (préférences lues, pas encore éditables)
+PATCH  /alertes/preferences        — reporté
 ```
+> Lot 2 : génération (J-3/J-1/J0), consultation et évolution de statut livrées. L'édition des préférences de notification (`/alertes/preferences`) est reportée (les préférences sont déjà lues par l'envoi).
 
 ## 9. Documents & ingestion IA
 ```

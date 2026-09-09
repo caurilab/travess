@@ -9,11 +9,14 @@ use App\Domains\Conteneurs\Actions\CreerConteneur;
 use App\Domains\Conteneurs\Models\Bl;
 use App\Domains\Dossiers\Models\Dossier;
 use App\Domains\Portail\Actions\CreerDossierAutonome;
+use App\Domains\Portail\Actions\DemanderAssignation;
+use App\Domains\Portail\Http\Requests\DemanderAssignationRequest;
 use App\Domains\Portail\Http\Requests\StoreBlAutonomeRequest;
 use App\Domains\Portail\Http\Requests\StoreConteneurAutonomeRequest;
 use App\Domains\Portail\Http\Requests\StoreDossierAutonomeRequest;
 use App\Domains\Portail\Http\Resources\BlPortailResource;
 use App\Domains\Portail\Http\Resources\ConteneurPortailResource;
+use App\Domains\Portail\Http\Resources\DemandeAssignationResource;
 use App\Domains\Portail\Http\Resources\DossierAutonomeResource;
 use App\Domains\Portail\Policies\DossierAutonomePolicy;
 use App\Domains\Portail\Services\FindOrCreateArmateurAutonome;
@@ -87,6 +90,22 @@ final class PortailAutonomeController
         ]);
 
         return ConteneurPortailResource::make($conteneur->load('suivis'))->response()->setStatusCode(201);
+    }
+
+    public function demanderAssignation(
+        Dossier $dossier,
+        DemanderAssignationRequest $requete,
+        DemanderAssignation $demander,
+    ): JsonResponse {
+        $this->autoriser($this->policy->modifier($requete->user(), $dossier));
+
+        $demande = $demander->executer(
+            $dossier,
+            (string) $requete->validated('transitaire_id'),
+            $requete->validated('message'),
+        );
+
+        return DemandeAssignationResource::make($demande)->response()->setStatusCode(202);
     }
 
     private function autoriser(bool $autorise): void

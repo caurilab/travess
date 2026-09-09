@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Domains\Portail\Http\Controllers\DemandeAssignationController;
 use App\Domains\Portail\Http\Controllers\InvitationController;
 use App\Domains\Portail\Http\Controllers\OnboardingController;
 use App\Domains\Portail\Http\Controllers\PortailAutonomeController;
@@ -30,6 +31,14 @@ Route::middleware(['auth:sanctum', 'tenant', 'autonome'])->prefix('portail/auton
     Route::get('dossiers/{dossier}', [PortailAutonomeController::class, 'show']);
     Route::post('dossiers/{dossier}/bls', [PortailAutonomeController::class, 'storeBl']);
     Route::post('bls/{bl}/conteneurs', [PortailAutonomeController::class, 'storeConteneur']);
+    Route::post('dossiers/{dossier}/assignation', [PortailAutonomeController::class, 'demanderAssignation']);
+});
+
+// 2 bis. Demandes d'assignation côté transitaire (inbox + décision, gérant).
+Route::middleware(['auth:sanctum', 'tenant'])->group(function (): void {
+    Route::get('demandes-assignation', [DemandeAssignationController::class, 'index']);
+    Route::post('demandes-assignation/{demande}/accepter', [DemandeAssignationController::class, 'accepter']);
+    Route::post('demandes-assignation/{demande}/refuser', [DemandeAssignationController::class, 'refuser']);
 });
 
 // 2. Émission d'invitations par le transitaire (throttle + plafond par tenant).

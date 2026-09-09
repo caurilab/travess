@@ -69,4 +69,30 @@ trait BelongsToTenant
     {
         return $query->withoutGlobalScope(TenantScope::class);
     }
+
+    /**
+     * Route-model binding tenant-sûr : la résolution du binding pouvant
+     * précéder le middleware tenant, on désactive le global scope (sinon il
+     * lèverait faute de contexte) et on filtre explicitement par le tenant
+     * courant, à défaut celui de l'utilisateur authentifié. Une cible d'un
+     * autre tenant est introuvable (404), jamais résolue globalement.
+     */
+    public function resolveRouteBinding($value, $field = null): ?Model
+    {
+        $contexte = app(TenantContext::class);
+        $tenantId = $contexte->id() ?? auth()->user()?->tenant_id;
+
+        if ($tenantId === null) {
+            return null;
+        }
+
+        // La résolution du binding précède le middleware tenant : le GUC RLS
+        // n'est pas encore posé. On lève la RLS le temps de cette lecture, mais
+        // le filtre explicite par tenant_id garantit qu'aucune ligne d'un autre
+        // tenant ne peut être résolue (404 pour l'inter-tenant).
+        return $contexte->runBypassed(fn (): ?Model => static::withoutGlobalScope(TenantScope::class)
+            ->where($field ?? $this->getRouteKeyName(), $value)
+            ->where('tenant_id', $tenantId)
+            ->first());
+    }
 }

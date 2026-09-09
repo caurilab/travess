@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Domains\Dossiers\Models\Dossier;
+use App\Domains\Dossiers\Policies\DossierPolicy;
 use App\Domains\Identity\Models\User;
 use App\Domains\Identity\Policies\UserPolicy;
 use App\Shared\Context\TenantContext;
@@ -32,5 +34,6 @@ final class DomainServiceProvider extends ServiceProvider
         // Policies (les modèles vivant hors de App\Models, l'auto-découverte ne
         // s'applique pas : on les enregistre explicitement).
         Gate::policy(User::class, UserPolicy::class);
+        Gate::policy(Dossier::class, DossierPolicy::class);
     }
 }

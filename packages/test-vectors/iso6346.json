@@ -1,5 +1,5 @@
 {
-  "description": "Vecteurs de test ISO 6346 (numéro de conteneur). Source UNIQUE de vérité consommée à la fois par le port TypeScript (packages/shared-core) et le port PHP (travess-api, domaine Conteneurs). Toute divergence entre les deux implémentations doit casser la CI. Format d'un numéro : 3 lettres (code propriétaire) + 1 lettre de catégorie (U, J ou Z) + 6 chiffres (série) + 1 chiffre de contrôle. La validation attend une forme canonique en majuscules, sans espace.",
+  "description": "Vecteurs de test ISO 6346 (numéro de conteneur). Source UNIQUE de vérité consommée à la fois par le port TypeScript (packages/shared-core) et le port PHP (travess-api, domaine Conteneurs). Toute divergence entre les deux implémentations doit casser la CI. Format d'un numéro : 3 lettres (code propriétaire) + 1 lettre de catégorie (U, J ou Z) + 6 chiffres (série) + 1 chiffre de contrôle. La validation attend une forme canonique en majuscules, sans espace. Cas limites couverts : chiffre de contrôle ramené à 0 quand le reste vaut 10 (MSKU0000080), et catégories J (MSKJ0000101) et Z (MSKZ0000102) en plus de U.",
   "valides": [
     "CSQU3054383",
     "MSCU7390252",
@@ -8,7 +8,10 @@
     "HLXU1234561",
     "CMAU2000004",
     "APLU9999992",
-    "ONEU1000001"
+    "ONEU1000001",
+    "MSKU0000080",
+    "MSKJ0000101",
+    "MSKZ0000102"
   ],
   "invalides": [
     { "numero": "CSQU3054384", "raison": "chiffre de contrôle incorrect" },
@@ -32,6 +35,7 @@
     { "prefixe": "HLXU123456", "attendu": 1 },
     { "prefixe": "CMAU200000", "attendu": 4 },
     { "prefixe": "APLU999999", "attendu": 2 },
-    { "prefixe": "ONEU100000", "attendu": 1 }
+    { "prefixe": "ONEU100000", "attendu": 1 },
+    { "prefixe": "MSKU000008", "attendu": 0 }
   ]
 }

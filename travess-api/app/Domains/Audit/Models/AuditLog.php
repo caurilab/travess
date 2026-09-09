@@ -29,6 +29,9 @@ final class AuditLog extends BaseModel
 
     protected $table = 'audit_log';
 
+    // Journal append-only : l'horodatage porté par « at », pas de created_at/updated_at.
+    public $timestamps = false;
+
     protected $fillable = [
         'user_id',
         'entite',

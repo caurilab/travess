@@ -17,7 +17,7 @@ tenant ──< dossier
    dossier ──< document
    dossier ──< charge / encaissement / honoraire
    dossier ──< mission_transport ──> chauffeur, camion
-   dossier ──< message
+   dossier ──< message        (lot ultérieur — Communication/Messagerie)
 conteneur ──< suivi_tracking (snapshots JSONCargo)
 conteneur ──< franchise (surestaries / détention)
 dossier ──< alerte

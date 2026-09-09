@@ -64,4 +64,40 @@ final class RlsTenantTest extends TestCase
         // Hors contexte, GUC vide : aucune ligne visible, même en requête brute.
         $this->assertSame(0, DB::table('clients')->count());
     }
+
+    /**
+     * Invariant : toute table portant tenant_id doit avoir la RLS FORCÉE et au
+     * moins une policy. Empêche qu'une future migration oublie RlsTenant::activer().
+     * Exemption : « users » porte tenant_id mais n'est pas scopée (amorçage auth).
+     */
+    public function test_toute_table_avec_tenant_id_a_la_rls_forcee(): void
+    {
+        $exemptes = ['users'];
+
+        $tables = DB::table('information_schema.columns')
+            ->where('table_schema', 'public')
+            ->where('column_name', 'tenant_id')
+            ->pluck('table_name')
+            ->unique()
+            ->reject(fn (string $t): bool => in_array($t, $exemptes, true));
+
+        $this->assertNotEmpty($tables, 'Aucune table scopée trouvée : le test ne garantirait rien.');
+
+        foreach ($tables as $table) {
+            $meta = DB::selectOne(
+                'select relrowsecurity, relforcerowsecurity from pg_class where relname = ? and relnamespace = \'public\'::regnamespace',
+                [$table],
+            );
+
+            $this->assertTrue((bool) $meta->relrowsecurity, "RLS non activée sur « {$table} ».");
+            $this->assertTrue((bool) $meta->relforcerowsecurity, "FORCE RLS non activée sur « {$table} ».");
+
+            $policies = DB::selectOne(
+                'select count(*) as n from pg_policies where schemaname = \'public\' and tablename = ?',
+                [$table],
+            );
+
+            $this->assertGreaterThan(0, (int) $policies->n, "Aucune policy RLS sur « {$table} ».");
+        }
+    }
 }

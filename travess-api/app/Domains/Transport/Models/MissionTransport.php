@@ -17,7 +17,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
  * @property string $tenant_id
  * @property string $dossier_id
  * @property string|null $chauffeur_id
- * @property string $camion
+ * @property string|null $camion
  * @property StatutMission $statut
  * @property array<int, mixed> $positions
  * @property string|null $lien_suivi_public

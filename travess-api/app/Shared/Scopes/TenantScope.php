@@ -34,7 +34,7 @@ final class TenantScope implements Scope
             throw TenantContextMissingException::forModel($model::class);
         }
 
-        /** @var \App\Shared\Concerns\BelongsToTenant $model */
-        $builder->where($model->getQualifiedTenantColumn(), $context->id());
+        // Colonne qualifiée pour éviter toute ambiguïté en cas de jointure.
+        $builder->where($model->getTable().'.tenant_id', $context->id());
     }
 }

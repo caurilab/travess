@@ -29,7 +29,7 @@ trait BelongsToTenant
 {
     public static function bootBelongsToTenant(): void
     {
-        static::addGlobalScope(new TenantScope());
+        static::addGlobalScope(new TenantScope);
 
         static::creating(function (Model $model): void {
             $context = app(TenantContext::class);
@@ -43,7 +43,7 @@ trait BelongsToTenant
             }
 
             // Le tenant vient toujours du contexte, jamais de l'entrée client.
-            $model->setAttribute($model->getTenantColumn(), $context->id());
+            $model->setAttribute('tenant_id', $context->id());
         });
     }
 

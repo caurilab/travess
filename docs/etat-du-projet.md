@@ -29,24 +29,23 @@
 - Monorepo pnpm + Turborepo opérationnel ; git initialisé (branche `main`).
 - `travess-api` : Laravel 13.31 en API pure, découpage `app/Domains/*` (12 domaines) + `app/Shared`, routes `/api/v1` chargées par domaine.
 - Multi-tenant **défense en profondeur, fail-closed** (ADR-004) : `TenantContext` (scoped), `TenantScope`, trait `BelongsToTenant`, middleware `EnsureTenantContext`, **Row-Level Security PostgreSQL** + FK composites `UNIQUE(id, tenant_id)`. Audit sécurité passé (bloquants traités).
-- Modèles `Tenant`, `User` (Sanctum + 2FA Fortify), `Client` ; migrations UUID v7, enums `varchar+CHECK`, seeder 2 tenants.
+- **Auth (0.c)** : Sanctum (jetons Bearer, expiration 1 j), Fortify **2FA TOTP** (activer/confirmer/désactiver, défi au login, codes de récupération à usage unique, anti-rejeu), endpoints `/auth/login|logout|me|refresh`. **Garde-fous `User`** (policy + route-model binding scopé fail-closed + tests d'isolation dédiés). Audit auth passé, durcissements appliqués : anti-énumération par timing, plafond login par IP, réauth pour désactiver le 2FA, non-réexposition d'un secret 2FA confirmé.
+- **Schéma complet (0.d)** : les 19 tables restantes de `docs/07` (armateurs, dossiers, étapes, BL, conteneurs, franchises, tracking, documents, extraction IA, charges, encaissements, honoraires, transport, alertes, notifications, paiements, consommation, audit) — 18 modèles, 21 enums, 18 factories, RLS + FK composites partout. Test anti-régression garantissant `BelongsToTenant` sur tout modèle scopé.
 - **ISO 6346** : port TS (`packages/shared-core`) + port PHP (`app/Domains/Conteneurs/Support`), parité garantie par vecteurs partagés (ADR-003).
 - `packages/shared-types` (DTO/enums miroir), `packages/ui` (jetons + statuts normalisés, direction corail).
-- Tests : **39 PHP** (10 étanchéité/RLS + 29 parité ISO 6346) + **29 TS** (ISO 6346), tous verts. Typecheck TS et build des 3 packages OK.
+- **CI & qualité (0.g)** : `.github/workflows/ci.yml` (job JS : typecheck/test/build ; job API : Postgres+Redis, migrate, Larastan, Pint, tests). **Pint** (style) et **Larastan niveau 5** verts.
+- Tests : **56 PHP** (étanchéité/RLS, auth+2FA, isolation users, parité ISO 6346) + **29 TS**, tous verts. Typecheck TS et build des 3 packages OK.
 
 **Reste à faire pour clore le Lot 0 :**
-- Auth (0.c) : endpoints `/auth/login|logout|me|refresh`, 2FA, **garde-fous `User`** (policy + route-model binding scopé + test d'étanchéité dédié — bloquant identifié par l'audit).
-- Modèle de données complet (0.d) : les ~21 tables restantes de `docs/07` (armateurs, dossiers, étapes, BL, conteneurs, franchises, tracking, documents, finances, transport, alertes, paiements, consommation, audit) avec RLS + FK composites.
-- Design system (0.f) : composants de base, contre `travess-web` (Lot 1).
-- CI (0.g) : `.github/workflows` (lint/typecheck/test JS + migrate/test/Pint/Larastan PHP, parité PHP↔TS bloquante).
-- Outillage qualité PHP : Pint + Larastan/PHPStan.
+- Design system (0.f) : composants de base (`Button`, `Input`, `Badge`, `Card`, `Table`), à développer contre `travess-web` au Lot 1 (jetons déjà livrés).
 
-## Dette technique identifiée (issue de l'audit sécurité)
+## Dette technique identifiée (issue des audits sécurité)
 
 - **Porteur de contexte tenant pour les jobs/queues** : à livrer avant le premier traitement en file (Lot 2), sinon fail-closed en file ou bypass dangereux.
 - **Contrôle du statut du tenant** (actif/suspendu) dans le middleware : à ajouter au lot facturation.
 - **Journalisation des `runBypassed`** (traçabilité des accès système/éditeur).
-- **Garde-fous `User`** (E1) : à livrer avec l'auth (0.c).
+- **Abilities de jeton** (séparation portail/agent) et **whitelist du `role`** à l'arrivée du CRUD utilisateurs : à traiter au lot Portail.
+- **Larastan** : monter du niveau 5 vers 6+ progressivement (annotations génériques).
 
 ## À faire — prochaines actions
 
@@ -64,4 +63,4 @@
 ## Journal
 
 - **2026-09-08** — Cadrage produit complet, choix de stack figés, documentation initiale rédigée, arborescence monorepo posée.
-- **2026-09-09** — Démarrage du Lot 0. Socle multi-tenant fail-closed + RLS PostgreSQL (audit sécurité passé), auth Sanctum/Fortify installée, ISO 6346 en parité PHP↔TS, packages `shared-core`/`shared-types`/`ui`. 68 tests verts (39 PHP + 29 TS). ADR-002 à ADR-005 rédigés.
+- **2026-09-09** — Lot 0 quasi complet. Socle multi-tenant fail-closed + RLS PostgreSQL, auth Sanctum + 2FA Fortify (deux audits sécurité passés, durcissements appliqués), schéma complet (24 tables, RLS + FK composites), ISO 6346 en parité PHP↔TS, packages `shared-core`/`shared-types`/`ui`, CI + Pint + Larastan. **85 tests verts** (56 PHP + 29 TS). ADR-002 à ADR-005. Reste : composants du design system (reportés au Lot 1). Dépôt distant : github.com/caurilab/travess.

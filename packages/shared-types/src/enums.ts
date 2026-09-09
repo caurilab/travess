@@ -15,3 +15,9 @@ export type StatutTenant = (typeof STATUTS_TENANT)[number];
 
 export const SENS_DOSSIER = ['import', 'export'] as const;
 export type SensDossier = (typeof SENS_DOSSIER)[number];
+
+export const STATUTS_DOSSIER = ['ouvert', 'en_cours', 'bloque', 'cloture'] as const;
+export type StatutDossier = (typeof STATUTS_DOSSIER)[number];
+
+export const STATUTS_ETAPE = ['a_faire', 'en_cours', 'fait', 'en_retard'] as const;
+export type StatutEtape = (typeof STATUTS_ETAPE)[number];

@@ -47,6 +47,22 @@
 - **Abilities de jeton** (séparation portail/agent) et **whitelist du `role`** à l'arrivée du CRUD utilisateurs : à traiter au lot Portail.
 - **Larastan** : monter du niveau 5 vers 6+ progressivement (annotations génériques).
 
+## Avancement — Lot 1 (Cœur dossier, surface agent)
+
+> En cours. Structure cadrée par l'architecte (ADR-006/007/008), arbitrages produit validés : référence auto par tenant, clôture manuelle auditée, workflow défaut-code + snapshot, filtres via spatie/laravel-query-builder.
+
+**Fait et vérifié — slice Dossiers :**
+- CRUD dossiers (`POST/GET/PATCH /dossiers`, `/{id}`), liste **filtrable** (sens, statut, client, agent) et paginée, détail imbriqué (client + étapes + agents, résumés finances/transport à forme figée).
+- **Référence auto** par tenant (IMP-2026-0001 / EXP-…, verrou consultatif + UNIQUE(tenant, reference)).
+- **Instanciation du workflow** à la création (snapshot des étapes par défaut selon le sens, `date_prevue` dérivée du cumul des SLA).
+- **Clôture** manuelle auditée (`POST /{id}/cloturer`), **assignation** des agents (`PUT /{id}/agents`, pivot scopé), **journal d'audit** (`GET /{id}/audit`, curseur).
+- **Audit** systématique via `Auditeur` appelé dans les Actions (transactionnel) ; **policies** par rôle (gérant/agent RW, comptable lecture).
+- Route-model binding **tenant-sûr** généralisé au trait `BelongsToTenant` (RLS levée pour la seule résolution, filtre tenant explicite → 404 inter-tenant).
+- DTO miroirs ajoutés à `packages/shared-types` (dossier, étape, audit, enums).
+- **10 tests Dossiers** verts (création+workflow, référence incrémentale, filtres, détail, mise à jour, clôture, assignation, audit, isolation, RBAC). Total **71 PHP + 33 TS**, Pint + Larastan 0.
+
+**Reste pour clore le Lot 1 :** endpoints Étapes (mise à jour statut/SLA, réordonnancement), Conteneurs & BL (règle ISO 6346 + `GET /conteneurs/valider`), Documents (dépôt/liste, sans IA), durcissement append-only `audit_log` (validation auditeur), et le raffinement « agent = dossiers assignés ».
+
 ## À faire — prochaines actions
 
 1. Confirmer auprès de JSONCargo : **HTTPS** de la base URL, et statut **Grimaldi**.
@@ -63,4 +79,5 @@
 ## Journal
 
 - **2026-09-08** — Cadrage produit complet, choix de stack figés, documentation initiale rédigée, arborescence monorepo posée.
+- **2026-09-10** — Lot 1 démarré (structure cadrée, ADR-006/007/008). Slice Dossiers livré : CRUD + liste filtrable, référence auto, workflow en snapshot, clôture/assignation/audit, binding tenant-sûr généralisé. 71 tests PHP + 33 TS verts.
 - **2026-09-09** — Lot 0 quasi complet. Socle multi-tenant fail-closed + RLS PostgreSQL, auth Sanctum + 2FA Fortify (deux audits sécurité passés, durcissements appliqués), schéma complet (22 tables métier, dont 20 scopées par RLS + FK composites), ISO 6346 en parité PHP↔TS, packages `shared-core`/`shared-types`/`ui`, CI + Pint + Larastan. **85 tests verts** (56 PHP + 29 TS). ADR-002 à ADR-005. Reste : composants du design system (reportés au Lot 1). Dépôt distant : github.com/caurilab/travess.

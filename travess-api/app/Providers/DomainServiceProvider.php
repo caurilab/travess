@@ -22,6 +22,9 @@ use App\Domains\Identity\Policies\UserPolicy;
 use App\Domains\Ingestion\Adapters\ExtracteurFactice;
 use App\Domains\Ingestion\Adapters\ExtracteurLaravelAi;
 use App\Domains\Ingestion\Contracts\ExtracteurDocument;
+use App\Domains\Messagerie\Adapters\ExpediteurFactice;
+use App\Domains\Messagerie\Adapters\ServiceOtpFactice;
+use App\Domains\Messagerie\Contracts\ServiceOtp;
 use App\Domains\Surestaries\Policies\FranchisePolicy;
 use App\Shared\Context\TenantContext;
 use Illuminate\Support\Facades\Gate;
@@ -48,6 +51,12 @@ final class DomainServiceProvider extends ServiceProvider
         $this->app->bind(ExtracteurDocument::class, static fn (): ExtracteurDocument => config('ia.driver') === 'laravel_ai'
             ? new ExtracteurLaravelAi()
             : new ExtracteurFactice());
+
+        // Messagerie sortante & OTP (onboarding portail), fournisseur isolé
+        // (principe n°9). Factice par défaut : flux testable sans réseau ni clé.
+        // L'expéditeur factice est un singleton (journal partagé test ↔ code).
+        $this->app->singleton(ExpediteurFactice::class);
+        $this->app->bind(ServiceOtp::class, static fn ($app): ServiceOtp => $app->make(ServiceOtpFactice::class));
     }
 
     public function boot(): void

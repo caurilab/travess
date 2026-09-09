@@ -37,6 +37,14 @@ final class TenantContext
      */
     private ?string $portailUserId = null;
 
+    /**
+     * Empreinte (hash) du token d'invitation présenté sur le chemin de
+     * réclamation PUBLIC. Alimente le GUC « app.invitation_token_hash » pour la
+     * RLS de l'invitation (lecture bornée à une ligne). Posé par le seul
+     * middleware public de réclamation, jamais par une entrée client arbitraire.
+     */
+    private ?string $invitationTokenHash = null;
+
     public function id(): ?string
     {
         return $this->tenantId;
@@ -45,6 +53,11 @@ final class TenantContext
     public function portailUserId(): ?string
     {
         return $this->portailUserId;
+    }
+
+    public function invitationTokenHash(): ?string
+    {
+        return $this->invitationTokenHash;
     }
 
     public function hasTenant(): bool
@@ -79,6 +92,24 @@ final class TenantContext
         // requête : sous runtime persistant, un app.portail_user_id résiduel
         // rouvrirait des dossiers partagés à la requête suivante.
         $this->forgetPortailUser();
+        $this->forgetInvitationToken();
+    }
+
+    /**
+     * Positionne l'empreinte du token d'invitation présenté (réclamation
+     * publique). Réservé au middleware de réclamation : la valeur est le hash du
+     * token porté par l'URL signée, jamais un app.invitation_token_hash fourni.
+     */
+    public function setInvitationToken(string $tokenHash): void
+    {
+        $this->invitationTokenHash = $tokenHash;
+        $this->definirGuc('app.invitation_token_hash', $tokenHash);
+    }
+
+    public function forgetInvitationToken(): void
+    {
+        $this->invitationTokenHash = null;
+        $this->definirGuc('app.invitation_token_hash', '');
     }
 
     /**

@@ -45,6 +45,7 @@ final class User extends Authenticatable
     protected $fillable = [
         'nom',
         'email',
+        'telephone',
         'password',
         'role',
         'preferences_notif',

@@ -85,6 +85,19 @@
 3. Lancer le **Lot 0** (fondations monorepo + API + auth + multi-tenant + modèle de données + design system).
 4. Souscrire **JSONCargo Navigator** et instrumenter la consommation dès le Lot 4.
 
+## Avancement — Lot 2 (Surestaries & alertes)
+
+> Fonctionnellement complet (audit sécurité jobs/scheduler + revue en cours). Décisions en ADR-010/011.
+
+**Fait et vérifié :**
+- **Calcul des franchises** (surestaries/détention) dans `shared-core`, **parité PHP↔TS** par vecteurs partagés (barème progressif, jours calendaires, montants entiers XOF, gel à la sortie).
+- **Franchises** persistées/recalculées (service `RecalculFranchise`, port unique) ; Actions `DefinirFranchise`/`AjusterFranchise` (auditées) ; endpoints `GET/POST /conteneurs/{id}/franchises`, `PATCH /franchises/{id}` (recalcul frais en lecture, sans écriture).
+- **Porteur de contexte tenant en file** (`TenantContext::pour`, `JobTenantScoped`) — dette F-1 résorbée, étanchéité en file testée.
+- **Moteur d'alertes** : job `RafraichirSurestaries` par tenant + commande `surestaries:rafraichir` planifiée quotidiennement ; génération idempotente J-3/J-1/J0 ; `GET /alertes`, `PATCH /alertes/{id}`.
+- **Répartition multi-canal découplée** : adaptateurs `CanalEnvoi` (email réel en file + canaux différés stub), job `EnvoyerAlerte`, journal `notification` + `canaux_envoyes`.
+- **Tableaux de bord** : `GET /dashboard/argent-en-feu` (menaçant cumulé + conteneurs à risque) et `/dashboard/surestaries-evitees` (métrique basée sur preuve).
+- **109 tests PHP + parité TS** verts, Pint + Larastan 0.
+
 ## Décisions produit à intégrer (cadrage en cours)
 
 > Modèle client/transitaire & partage inter-tenant — cadrage en cours (impacte l'isolation stricte d'ADR-004). Conception délibérée à faire au lot Portail/onboarding (architecte + auditeur + nouvel ADR). Non tranché : le modèle de tenant exact (transitaire = tenant + client compte partagé, vs deux espaces). Le travail interne au transitaire (Lots 0–2) reste valide quel que soit le modèle.
@@ -107,5 +120,6 @@
 ## Journal
 
 - **2026-09-08** — Cadrage produit complet, choix de stack figés, documentation initiale rédigée, arborescence monorepo posée.
+- **2026-09-10** — **Lot 2 complet** (Surestaries & alertes) : calcul des franchises en parité PHP↔TS, porteur de contexte tenant en file, moteur d'alertes J-3/J-1/J0 (scheduler), répartition multi-canal (email + stubs), tableaux de bord « argent en feu » / « surestaries évitées ». 109 tests PHP + parité TS. ADR-010/011. Audit/revue en cours.
 - **2026-09-10** — **Lot 1 complet** (cœur dossier, surface agent) : dossiers (CRUD, liste filtrable, référence auto, workflow snapshot, clôture, assignation, audit), étapes, conteneurs/BL (ISO 6346 serveur), documents. Durcissement append-only de l'audit (trigger + RESTRICT, ADR-009). Audits sécurité + revue passés, correctifs intégrés. 89 tests PHP + 33 TS verts. ADR-006 à ADR-009.
 - **2026-09-09** — Lot 0 quasi complet. Socle multi-tenant fail-closed + RLS PostgreSQL, auth Sanctum + 2FA Fortify (deux audits sécurité passés, durcissements appliqués), schéma complet (22 tables métier, dont 20 scopées par RLS + FK composites), ISO 6346 en parité PHP↔TS, packages `shared-core`/`shared-types`/`ui`, CI + Pint + Larastan. **85 tests verts** (56 PHP + 29 TS). ADR-002 à ADR-005. Reste : composants du design system (reportés au Lot 1). Dépôt distant : github.com/caurilab/travess.

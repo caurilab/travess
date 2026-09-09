@@ -138,6 +138,28 @@
 - Impact conception : **projections multiples** du détail dossier + policies selon la posture ; annuaire public des transitaires ; mécanisme de partage/ACL inter-tenant ; acceptation d'assignation.
 - **Onboarding d'un client sans compte** (Lot 7) : au partage d'un dossier, le transitaire pré-crée un **compte client en attente** lié au dossier et envoie un **lien d'invitation signé à expiration** (e-mail ou **WhatsApp**). À l'ouverture, le client **réclame** le compte rapidement : **OTP** (idéalement **WhatsApp**, canal d'arrivée) + mot de passe ou **passkey** ; il accède aussitôt à sa vue (BL + parcours). Options de rapidité : magic link / passwordless, OTP WhatsApp natif, QR code (partage en personne / desktop→mobile), passkey dès la création ; repli : le transitaire rappelle / renvoie le lien.
 
+## Avancement — Lot 7 (Portail & onboarding)
+
+> En cours. Modèle d'accès conçu et validé par arbitrage produit ; décision consignée en ADR-013 (amende ADR-004). Le socle d'isolation du portail est le point le plus sensible du lot.
+
+**Modèle retenu :**
+- **Le compte client est son propre tenant `type=client`** (workspace léger, sans quota IA ni tracking). Équivalence stricte `User.role=client` ⟺ tenant `type=client` ; non-cumul garanti par l'email unique plateforme (un compte = une posture).
+- **Un dossier a toujours un unique tenant propriétaire** ; ses enfants (BL, conteneurs, finances, documents, étapes) restent sous sa RLS.
+- **Partage inter-tenant explicite via `acces_dossier`** : nominatif, lecture seule, projection en liste blanche, prouvé en base par une politique RLS `FOR SELECT` *grant-aware* s'appuyant sur le GUC `app.portail_user_id` (posé par le middleware portail, jamais par le client). L'invariant « aucun accès inter-tenant implicite » tient.
+- **Trois niveaux d'accès** : `limite` (client avec transitaire : BL + parcours), `etendu` (client autonome, dans son propre tenant), `gestion` (transitaire propriétaire).
+- **Posture du dossier** `autonome` / `gere_par_transitaire` ; la bascule `autonome → gere_par_transitaire` implique une migration de propriété (re-tenant de l'agrégat) transactionnelle et auditée.
+- **Onboarding** : lien d'invitation **signé à expiration** + réclamation du compte par **OTP** (idéalement WhatsApp, canal d'arrivée) ; accès immédiat à la vue BL + parcours.
+
+**Décisions produit actées :**
+- **Bascule stricte** : au passage autonome → géré, le client passe en vue limitée STRICTE (BL + parcours) et perd l'accès aux finances/documents qu'il gérait.
+- **Annuaire opt-in** : un transitaire n'apparaît dans l'annuaire public que s'il l'a explicitement demandé.
+- **Mobile Money découplé** en sous-lot terminal 7.5 (paiement isolé du socle d'accès).
+
+**Découpage 7.0 → 7.5 :**
+- **7.0 — Fondations du modèle d'accès** (compte client = tenant `type=client`, table `acces_dossier` + RLS *grant-aware*, GUC `app.portail_user_id`, trois niveaux, posture du dossier). **Premier incrément, à auditer avant la suite.**
+- **7.1+** — projections bornées du dossier, flux d'assignation/invitation, onboarding (lien signé + OTP), annuaire opt-in, bascule de posture auditée.
+- **7.5 — Mobile Money** (sous-lot terminal).
+
 ## Questions ouvertes
 
 - Table de correspondance précise `container_status` → statut Travess (à établir sur données réelles).
@@ -146,6 +168,7 @@
 
 ## Journal
 
+- **2026-09-10** — **Lot 7 — modèle d'accès du portail conçu et validé** (arbitrage produit) : compte client = tenant `type=client` ; partage inter-tenant borné en lecture via `acces_dossier` + politique RLS `FOR SELECT` *grant-aware* (GUC `app.portail_user_id`) ; trois niveaux d'accès (`limite`/`etendu`/`gestion`) ; posture du dossier `autonome`/`gere_par_transitaire` avec migration de propriété auditée. Trois décisions produit actées : bascule stricte BL+parcours à la reprise par un transitaire, annuaire des transitaires en opt-in, Mobile Money découplé en sous-lot 7.5. Découpage 7.0 → 7.5, 7.0 (fondations du modèle d'accès) à auditer avant la suite. ADR-013 (amende ADR-004).
 - **2026-09-10** — **Lot 5 complet** (Ingestion documentaire par IA) : contrat `ExtracteurDocument` avec adaptateurs factice (défaut, sans clé) et Claude via `laravel/ai`, DTO neutres et schémas paramétrables, pipeline en file (`LancerExtraction` → `ExtraireDocument` → `ValiderExtraction`) avec réservation atomique du quota et application au dossier sous validation humaine, décompte de consommation tenant-scopé, endpoints d'extraction/validation. Testable de bout en bout sans clé API. 136 tests PHP verts, Pint + Larastan niveau 5 à 0. Audit sécurité, revue et testeur passés. ADR-012.
 - **2026-09-08** — Cadrage produit complet, choix de stack figés, documentation initiale rédigée, arborescence monorepo posée.
 - **2026-09-10** — **Lot 2 complet** (Surestaries & alertes) : calcul des franchises en parité PHP↔TS, porteur de contexte tenant en file, moteur d'alertes J-3/J-1/J0 (scheduler), répartition multi-canal (email + stubs), tableaux de bord « argent en feu » / « surestaries évitées ». 109 tests PHP + parité TS. ADR-010/011. Audit/revue en cours.

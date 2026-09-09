@@ -1,5 +1,7 @@
 # ADR-004 — Isolation multi-tenant (défense en profondeur)
 
+> Amendé par ADR-013 (portail : partage inter-tenant borné en lecture).
+
 ## Contexte
 Travess est multi-tenant sur base unique. L'isolation par `tenant_id` est la faille la plus grave à éviter (`docs/03` §8.1, principe n°3). Le `tenant_id` ne doit jamais venir du client, et aucun accès inter-tenant ne doit être possible au niveau applicatif.
 

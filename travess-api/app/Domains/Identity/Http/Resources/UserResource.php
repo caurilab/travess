@@ -23,6 +23,7 @@ final class UserResource extends JsonResource
             'nom' => $this->nom,
             'email' => $this->email,
             'role' => $this->role->value,
+            'deux_facteurs_actif' => $this->two_factor_confirmed_at !== null,
         ];
     }
 }

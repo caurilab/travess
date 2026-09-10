@@ -13,6 +13,8 @@ interface ContexteAuth {
   readonly connecter: (email: string, motDePasse: string, code?: string) => Promise<'2fa' | null>;
   readonly deconnecter: () => Promise<void>;
   readonly aLaPermission: (permission: string) => boolean;
+  /** Recharge l'identité courante (/auth/me), après un changement (ex. 2FA). */
+  readonly rafraichir: () => Promise<void>;
 }
 
 const Contexte = createContext<ContexteAuth | null>(null);
@@ -76,7 +78,9 @@ export function AuthProvider({ children }: { readonly children: ReactNode }) {
   );
 
   return (
-    <Contexte value={{ statut, moi, connecter, deconnecter, aLaPermission }}>{children}</Contexte>
+    <Contexte value={{ statut, moi, connecter, deconnecter, aLaPermission, rafraichir: chargerMoi }}>
+      {children}
+    </Contexte>
   );
 }
 

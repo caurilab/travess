@@ -9,6 +9,14 @@ export interface UtilisateurDTO {
   readonly nom: string;
   readonly email: string;
   readonly role: RoleUtilisateur;
+  readonly deux_facteurs_actif: boolean;
+}
+
+/** Réponse de POST /auth/2fa/activer (enrôlement, secret exposé une seule fois). */
+export interface Enrolement2faDTO {
+  readonly secret: string;
+  readonly otpauth_url: string;
+  readonly codes_recuperation: readonly string[];
 }
 
 /**

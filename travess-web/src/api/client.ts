@@ -73,10 +73,35 @@ async function requete<T>(chemin: string, options: Options = {}): Promise<T> {
   return enveloppe as T;
 }
 
+/** Envoi multipart (téléversement de fichier) — pas de Content-Type imposé. */
+async function televerser<T>(chemin: string, donnees: FormData): Promise<T> {
+  const jeton = lireJeton();
+  const reponse = await fetch(BASE + chemin, {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+      ...(jeton !== null ? { Authorization: `Bearer ${jeton}` } : {}),
+    },
+    body: donnees,
+  });
+
+  const charge: unknown = await reponse.json().catch(() => null);
+  if (!reponse.ok) {
+    const erreur = (charge as ErreurApi | null)?.error;
+    throw new ErreurRequete(reponse.status, erreur?.code ?? 'erreur', erreur?.message ?? 'Téléversement impossible.', erreur?.details);
+  }
+  const enveloppe = charge as Enveloppe<T> | T;
+  if (enveloppe !== null && typeof enveloppe === 'object' && 'data' in enveloppe) {
+    return (enveloppe as Enveloppe<T>).data;
+  }
+  return enveloppe as T;
+}
+
 export const api = {
   get: <T>(chemin: string, signal?: AbortSignal) => requete<T>(chemin, { signal }),
   post: <T>(chemin: string, corps?: unknown) => requete<T>(chemin, { methode: 'POST', corps }),
   put: <T>(chemin: string, corps?: unknown) => requete<T>(chemin, { methode: 'PUT', corps }),
   patch: <T>(chemin: string, corps?: unknown) => requete<T>(chemin, { methode: 'PATCH', corps }),
   supprimer: <T>(chemin: string) => requete<T>(chemin, { methode: 'DELETE' }),
+  televerser,
 };

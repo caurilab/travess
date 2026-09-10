@@ -547,3 +547,125 @@
   border-color: var(--tv-primaire);
   color: var(--tv-primaire-contraste);
 }
+
+/* Onglet Documents */
+.checklist {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--tv-espace-2);
+}
+.checklist__item {
+  display: flex;
+  align-items: center;
+  gap: var(--tv-espace-3);
+  font-size: 14px;
+  color: var(--tv-texte-attenue);
+}
+.checklist__item--ok {
+  color: var(--tv-texte);
+}
+.checklist__marque {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: var(--tv-rayon-pilule);
+  background: var(--tv-neutre-100);
+  color: var(--tv-texte-attenue);
+  font-size: 12px;
+  flex-shrink: 0;
+}
+.checklist__item--ok .checklist__marque {
+  background: var(--tv-regle);
+  color: #fff;
+}
+
+.docs {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tv-espace-3);
+  margin-bottom: var(--tv-espace-5);
+}
+.doc {
+  border: 1px solid var(--tv-bordure);
+  border-radius: var(--tv-rayon-md);
+  padding: var(--tv-espace-4);
+}
+.doc__ligne {
+  display: flex;
+  align-items: center;
+  gap: var(--tv-espace-4);
+}
+.doc__info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+.doc__type {
+  font-weight: 600;
+  font-size: 14px;
+}
+.doc__nom {
+  font-size: 12px;
+  color: var(--tv-texte-attenue);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.doc__actions {
+  margin-left: auto;
+}
+
+.doc__proposition {
+  margin-top: var(--tv-espace-4);
+  padding-top: var(--tv-espace-4);
+  border-top: 1px dashed var(--tv-bordure);
+  display: flex;
+  flex-direction: column;
+  gap: var(--tv-espace-4);
+}
+.doc__proposition-titre {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--tv-texte-attenue);
+  margin: 0;
+}
+.champs {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--tv-espace-3);
+}
+.champ-extrait {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.champ-extrait__nom {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--tv-espace-2);
+  font-size: 12px;
+  color: var(--tv-texte-attenue);
+}
+.champ-extrait__confiance {
+  font-style: normal;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  color: var(--tv-info);
+}
+
+.televersement {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--tv-espace-3);
+  padding-top: var(--tv-espace-4);
+  border-top: 1px solid var(--tv-bordure);
+}

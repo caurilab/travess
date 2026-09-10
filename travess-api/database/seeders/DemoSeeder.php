@@ -33,6 +33,12 @@ final class DemoSeeder extends Seeder
             ['type' => 'transitaire', 'quota_ia_mensuel' => 100, 'quota_tracking_mensuel' => 1000],
         );
 
+        // Active l'ingestion IA (opt-in) pour la démo : l'onglet Documents peut
+        // lancer l'extraction (driver « factice » en dev, sans clé ni réseau).
+        if (($tenant->parametres['ia_activee'] ?? false) !== true) {
+            $tenant->forceFill(['parametres' => [...($tenant->parametres ?? []), 'ia_activee' => true]])->save();
+        }
+
         if (User::where('email', 'demo@travess.ci')->doesntExist()) {
             $user = new User([
                 'nom' => 'Awa Koné',

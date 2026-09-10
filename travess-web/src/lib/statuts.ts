@@ -53,3 +53,24 @@ const ALERTE_TYPE: Record<TypeAlerte, { ton: TonStatut; libelle: string }> = {
 
 export const statutAlerte = (s: StatutAlerte) => ALERTE_STATUT[s];
 export const typeAlerte = (t: TypeAlerte) => ALERTE_TYPE[t];
+
+import type { StatutIngestion, TypeDocument } from '@travess/shared-types';
+
+const INGESTION: Record<StatutIngestion, { ton: TonStatut; libelle: string }> = {
+  none: { ton: 'neutre', libelle: 'À traiter' },
+  en_file: { ton: 'encours', libelle: 'Extraction en cours' },
+  extrait: { ton: 'info', libelle: 'Extrait — à valider' },
+  valide: { ton: 'regle', libelle: 'Validé' },
+};
+
+const DOC: Record<TypeDocument, string> = {
+  bl: 'BL / Connaissement',
+  facture_charges: 'Facture charges locales',
+  do: 'DO / Bon à délivrer',
+  declaration_douane: 'Déclaration en douane',
+  bon_livraison: 'Bon de livraison',
+  autre: 'Autre',
+};
+
+export const statutIngestion = (s: StatutIngestion) => INGESTION[s];
+export const libelleTypeDocument = (t: TypeDocument) => DOC[t];

@@ -8,6 +8,7 @@ use App\Domains\Conteneurs\Support\Iso6346;
 use App\Domains\Tracking\Adapters\AdaptateurTrackingFactice;
 use App\Domains\Tracking\Data\SuiviConteneurData;
 use App\Domains\Tracking\Enums\PhaseConteneur;
+use App\Domains\Tracking\Support\JalonsParcours;
 use Carbon\CarbonImmutable;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
@@ -84,6 +85,18 @@ final class AdaptateurTrackingFacticeTest extends TestCase
 
         // Même empreinte de contenu signifiant (base de l'idempotence).
         $this->assertSame($a->empreinte(), $b->empreinte());
+    }
+
+    public function test_snapshot_par_defaut_porte_les_jalons_de_route(): void
+    {
+        $suivi = (new AdaptateurTrackingFactice)->suivreConteneur('MSCU7390252', 'MSC');
+
+        // Le snapshot enrichi doit alimenter la frise datée (origine → destination).
+        foreach (['shipped_from', 'atd_origin', 'last_location', 'shipped_to', 'eta_final_destination'] as $cle) {
+            $this->assertArrayHasKey($cle, $suivi->snapshotBrut, "clé de route manquante : {$cle}");
+        }
+        $this->assertSame('Abidjan, CI', $suivi->snapshotBrut['shipped_to']);
+        $this->assertNotSame([], JalonsParcours::depuis($suivi->snapshotBrut));
     }
 
     public function test_poser_quota_consomme_pilote_les_stats(): void

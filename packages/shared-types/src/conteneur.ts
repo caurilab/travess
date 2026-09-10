@@ -5,6 +5,23 @@ import type {
 } from './enums.js';
 
 /**
+ * Un jalon daté du parcours d'un conteneur (frise « à la MSC »).
+ */
+export interface JalonSuiviDTO {
+  readonly code: 'depart' | 'position' | 'escale' | 'destination';
+  readonly libelle: string;
+  readonly lieu: string;
+  readonly terminal: string | null;
+  /** ISO 8601, ou null si la date n'est pas connue. */
+  readonly date: string | null;
+  /** true = ETA prévue ; false = mouvement constaté. */
+  readonly date_estimee: boolean;
+  readonly navire?: string | null;
+  readonly detail?: string | null;
+  readonly etat: 'fait' | 'actuel' | 'prevu';
+}
+
+/**
  * Dernier suivi tracking d'un conteneur (projeté sur la fiche agent).
  */
 export interface DernierSuiviDTO {
@@ -16,6 +33,8 @@ export interface DernierSuiviDTO {
   readonly navire_imo: string | null;
   readonly prochain_poll_prevu: string | null;
   readonly capture_le: string | null;
+  /** Frise datée du parcours (origine → position → destination). */
+  readonly jalons: readonly JalonSuiviDTO[];
 }
 
 /**

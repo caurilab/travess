@@ -6,6 +6,7 @@ namespace App\Domains\Conteneurs\Http\Resources;
 
 use App\Domains\Conteneurs\Models\Conteneur;
 use App\Domains\Conteneurs\Models\SuiviTracking;
+use App\Domains\Tracking\Support\JalonsParcours;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -53,6 +54,8 @@ final class ConteneurResource extends JsonResource
             'navire_imo' => $dernier->navire_imo,
             'prochain_poll_prevu' => $dernier->prochain_poll_prevu?->toIso8601String(),
             'capture_le' => $dernier->captured_at?->toIso8601String(),
+            // Frise datée du parcours (origine → position → destination).
+            'jalons' => JalonsParcours::depuis($dernier->snapshot ?? []),
         ];
     }
 }

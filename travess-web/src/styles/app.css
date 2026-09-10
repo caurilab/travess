@@ -1415,3 +1415,108 @@
 @media (prefers-reduced-motion: reduce) {
   .extraction-progres__glisse { animation-duration: 3s; }
 }
+
+/* Frise verticale datée du parcours conteneur (façon suivi armateur) */
+.frise {
+  list-style: none;
+  margin: 0;
+  padding: var(--tv-espace-2) var(--tv-espace-4) var(--tv-espace-4);
+  display: flex;
+  flex-direction: column;
+}
+.frise__jalon {
+  position: relative;
+  padding: 0 0 var(--tv-espace-5) var(--tv-espace-6);
+  border-left: 2px solid var(--tv-bordure);
+}
+.frise__jalon:last-child {
+  border-left-color: transparent;
+  padding-bottom: 0;
+}
+.frise__puce {
+  position: absolute;
+  left: -8px;
+  top: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: var(--tv-rayon-pilule);
+  background: var(--tv-surface);
+  border: 2px solid var(--tv-bordure);
+  box-sizing: border-box;
+}
+/* Jalons franchis : trait et puce en vert « réglé ». */
+.frise__jalon--fait {
+  border-left-color: var(--tv-regle);
+}
+.frise__jalon--fait .frise__puce {
+  background: var(--tv-regle);
+  border-color: var(--tv-regle);
+}
+/* Jalon courant : corail de marque, halo pulsé. */
+.frise__jalon--actuel .frise__puce {
+  background: var(--tv-primaire);
+  border-color: var(--tv-primaire);
+  box-shadow: 0 0 0 4px var(--tv-marque-100);
+  animation: frise-pulse 2s ease-in-out infinite;
+}
+@keyframes frise-pulse {
+  0%, 100% { box-shadow: 0 0 0 3px var(--tv-marque-100); }
+  50% { box-shadow: 0 0 0 6px var(--tv-marque-50); }
+}
+.frise__corps {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.frise__tete {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--tv-espace-3);
+}
+.frise__libelle {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--tv-texte-attenue);
+}
+.frise__jalon--actuel .frise__libelle {
+  color: var(--tv-primaire);
+}
+.frise__date {
+  font-size: 12px;
+  color: var(--tv-texte-attenue);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.frise__lieu {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--tv-texte);
+}
+.frise__terminal {
+  font-size: 12px;
+  color: var(--tv-texte-attenue);
+}
+.frise__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--tv-espace-2);
+  margin-top: 2px;
+}
+.frise__navire,
+.frise__detail {
+  font-size: 11px;
+  padding: 2px var(--tv-espace-2);
+  border-radius: var(--tv-rayon-pilule);
+  background: var(--tv-neutre-100);
+  color: var(--tv-neutre-600);
+}
+.frise__navire {
+  background: var(--tv-marque-50);
+  color: var(--tv-marque-700);
+}
+@media (prefers-reduced-motion: reduce) {
+  .frise__jalon--actuel .frise__puce { animation: none; }
+}

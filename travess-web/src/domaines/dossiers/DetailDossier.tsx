@@ -5,6 +5,7 @@ import {
   TYPES_CONTENEUR,
   type ConteneurDTO,
   type DossierDTO,
+  type JalonSuiviDTO,
 } from '@travess/shared-types';
 import { useState, type FormEvent } from 'react';
 import { Link, useParams } from 'react-router-dom';
@@ -292,6 +293,8 @@ function ConteneurCarte({
 
       <ParcoursStepper statut={c.statut} statutBrut={suivi?.statut_brut ?? null} />
 
+      {suivi && suivi.jalons.length > 0 ? <ParcoursTimeline jalons={suivi.jalons} /> : null}
+
       <div className="suivi__grille">
         <SuiviCase libelle="Dernier mouvement" valeur={suivi?.emplacement ?? '—'} />
         <SuiviCase libelle="ETA destination" valeur={suivi?.eta_destination ? dateCourte(suivi.eta_destination.slice(0, 10)) : '—'} />
@@ -330,6 +333,47 @@ function ParcoursStepper({ statut, statutBrut }: { readonly statut: string; read
           </li>
         );
       })}
+    </ol>
+  );
+}
+
+/** Formate une date de jalon en « 4 août 2026 » ; heure omise pour la lisibilité. */
+function dateJalon(iso: string | null): string {
+  if (iso === null) return 'date à confirmer';
+
+  return dateCourte(iso.slice(0, 10));
+}
+
+/**
+ * Frise verticale datée du parcours d'un conteneur (origine → position →
+ * destination), façon suivi armateur. Remplace visuellement une carte : chaque
+ * ligne est un jalon avec lieu, terminal et date (réelle ou estimée).
+ */
+function ParcoursTimeline({ jalons }: { readonly jalons: readonly JalonSuiviDTO[] }) {
+  return (
+    <ol className="frise" aria-label="Parcours daté du conteneur">
+      {jalons.map((j) => (
+        <li key={j.code} className={`frise__jalon frise__jalon--${j.etat}`}>
+          <span className="frise__puce" aria-hidden="true" />
+          <div className="frise__corps">
+            <div className="frise__tete">
+              <span className="frise__libelle">{j.libelle}</span>
+              <span className="frise__date">
+                {j.date_estimee && j.date !== null ? 'ETA ' : ''}
+                {dateJalon(j.date)}
+              </span>
+            </div>
+            <span className="frise__lieu">{j.lieu}</span>
+            {j.terminal !== null ? <span className="frise__terminal">{j.terminal}</span> : null}
+            {j.navire != null || j.detail != null ? (
+              <span className="frise__meta">
+                {j.navire != null ? <span className="frise__navire">🚢 {j.navire}</span> : null}
+                {j.detail != null ? <span className="frise__detail">{j.detail}</span> : null}
+              </span>
+            ) : null}
+          </div>
+        </li>
+      ))}
     </ol>
   );
 }

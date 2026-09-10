@@ -92,10 +92,77 @@ final class AdaptateurTrackingFactice implements FournisseurTracking
             etaDestination: $eta,
             navireNom: $navire->nom,
             navireImo: $navire->imo,
-            snapshotBrut: ['source' => 'factice', 'position' => $position, 'phase' => $phase->value],
+            // Snapshot enrichi aux mêmes clés que JSONCargo (docs/09) : la frise
+            // datée (JalonsParcours) se dérive uniformément, réel ou factice.
+            snapshotBrut: $this->snapshotJalons($numero, $phase, $position, $navire->nom, $eta, $maintenant),
             capturedAt: $maintenant,
         );
     }
+
+    /**
+     * Fabrique un snapshot réaliste (origine → position → destination) pour que
+     * la timeline de démo soit crédible sans réseau. Route déterministe tirée du
+     * numéro ; destination = Abidjan (contexte transitaire ouest-africain).
+     *
+     * @return array<string, mixed>
+     */
+    private function snapshotJalons(
+        string $numero,
+        PhaseConteneur $phase,
+        int $position,
+        ?string $navire,
+        CarbonImmutable $eta,
+        CarbonImmutable $maintenant,
+    ): array {
+        [$origine, $origineTerminal] = self::ROUTES[crc32($numero) % count(self::ROUTES)];
+        $destination = 'Abidjan, CI';
+        $destinationTerminal = "Côte d'Ivoire Terminal (CIT)";
+
+        $depart = $maintenant->subDays($position + 3);
+        $arriveEffective = in_array($phase, [
+            PhaseConteneur::Decharge,
+            PhaseConteneur::Enleve,
+            PhaseConteneur::Livre,
+            PhaseConteneur::Rendu,
+        ], true);
+
+        // Le conteneur est-il déjà rendu à destination, ou encore en route ?
+        $dernierLieu = $arriveEffective ? $destination : $origine;
+        $dernierTerminal = $arriveEffective ? $destinationTerminal : $origineTerminal;
+        $dernierMouvement = $arriveEffective ? $eta->subDays(1) : $depart;
+
+        return [
+            'source' => 'factice',
+            'position' => $position,
+            'phase' => $phase->value,
+            'container_status' => $this->statutLisiblePourPhase($phase),
+            'shipped_from' => $origine,
+            'shipped_from_terminal' => $origineTerminal,
+            'atd_origin' => $depart->format('Y-m-d H:i'),
+            'last_location' => $dernierLieu,
+            'last_location_terminal' => $dernierTerminal,
+            'last_movement_timestamp' => $dernierMouvement->format('Y-m-d H:i'),
+            // Prochaine escale : la destination tant que le conteneur navigue.
+            'next_location' => $arriveEffective ? null : $destination,
+            'next_location_terminal' => $arriveEffective ? null : $destinationTerminal,
+            'eta_next_destination' => $arriveEffective ? null : $eta->format('Y-m-d H:i'),
+            'shipped_to' => $destination,
+            'shipped_to_terminal' => $destinationTerminal,
+            'eta_final_destination' => $eta->format('Y-m-d H:i'),
+            'current_vessel_name' => $arriveEffective ? null : $navire,
+            'last_vessel_name' => $navire,
+        ];
+    }
+
+    /** Ports d'origine plausibles vers Abidjan (démo). */
+    private const ROUTES = [
+        ['Nansha, CN', 'Nansha International Container Terminal'],
+        ['Shanghai, CN', 'Yangshan Deep-Water Port'],
+        ['Antwerp, BE', 'MSC PSA European Terminal'],
+        ['Le Havre, FR', 'Terminal de France'],
+        ['Jebel Ali, AE', 'Jebel Ali Terminal 2'],
+        ['Tanger Med, MA', 'Eurogate Tanger'],
+    ];
 
     public function resoudreNavireImo(string $imoOuNom): NavireData
     {
@@ -128,6 +195,19 @@ final class AdaptateurTrackingFactice implements FournisseurTracking
             $position < 20 => PhaseConteneur::Enleve,
             $position < 24 => PhaseConteneur::Livre,
             default => PhaseConteneur::Rendu,
+        };
+    }
+
+    /** Libellé de statut lisible (affiché dans la frise), distinct du marqueur interne statutBrut. */
+    private function statutLisiblePourPhase(PhaseConteneur $phase): string
+    {
+        return match ($phase) {
+            PhaseConteneur::EnMer => 'Chargé sur navire',
+            PhaseConteneur::Approche => 'Approche du port',
+            PhaseConteneur::Decharge => 'Déchargé',
+            PhaseConteneur::Enleve => 'Enlevé du terminal',
+            PhaseConteneur::Livre => 'Livré au client',
+            PhaseConteneur::Rendu => 'Conteneur rendu',
         };
     }
 

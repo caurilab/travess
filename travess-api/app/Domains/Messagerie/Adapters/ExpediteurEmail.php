@@ -9,6 +9,7 @@ use App\Domains\Messagerie\Data\Destinataire;
 use App\Domains\Messagerie\Data\MessageSortant;
 use App\Domains\Messagerie\Data\ResultatEnvoi;
 use App\Domains\Messagerie\Enums\StatutEnvoi;
+use App\Domains\Messagerie\Mail\CorrespondanceMail;
 use App\Domains\Messagerie\Mail\InvitationMail;
 use Illuminate\Support\Facades\Mail;
 use InvalidArgumentException;
@@ -26,6 +27,10 @@ final class ExpediteurEmail implements ExpediteurMessage
             'invitation_portail' => new InvitationMail(
                 $message->params['lien'] ?? '',
                 $message->params['reference'] ?? '',
+            ),
+            'correspondance_libre' => new CorrespondanceMail(
+                $message->params['objet'] ?? '',
+                $message->params['corps'] ?? '',
             ),
             default => throw new InvalidArgumentException("Gabarit e-mail inconnu : {$message->gabarit}"),
         };

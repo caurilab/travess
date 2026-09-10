@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domains\Dossiers\Models;
 
 use App\Domains\Conteneurs\Models\Bl;
+use App\Domains\Correspondance\Models\Message;
 use App\Domains\Documents\Models\Document;
 use App\Domains\Dossiers\Enums\PostureDossier;
 use App\Domains\Dossiers\Enums\SensDossier;
@@ -93,6 +94,14 @@ final class Dossier extends BaseModel
     public function documents(): HasMany
     {
         return $this->hasMany(Document::class);
+    }
+
+    /**
+     * @return HasMany<Message, $this>
+     */
+    public function messages(): HasMany
+    {
+        return $this->hasMany(Message::class);
     }
 
     protected static function newFactory(): Factory

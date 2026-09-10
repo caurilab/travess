@@ -50,6 +50,9 @@ final class MigrerProprieteDossier
         'encaissements' => 'dossier_id = ?',
         'missions_transport' => 'dossier_id = ?',
         'alertes' => 'dossier_id = ?',
+        // Correspondance armateur : suit le dossier vers son nouveau propriétaire
+        // (comme documents/alertes), jamais orpheline chez l'ancien tenant.
+        'messages' => 'dossier_id = ?',
         'conteneurs' => 'bl_id IN (SELECT id FROM bls WHERE dossier_id = ?)',
         'franchises' => 'conteneur_id IN (SELECT c.id FROM conteneurs c JOIN bls b ON b.id = c.bl_id WHERE b.dossier_id = ?)',
         'suivi_tracking' => 'conteneur_id IN (SELECT c.id FROM conteneurs c JOIN bls b ON b.id = c.bl_id WHERE b.dossier_id = ?)',

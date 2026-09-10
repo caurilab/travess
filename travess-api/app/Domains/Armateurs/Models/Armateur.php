@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
  * @property string $tenant_id
  * @property string $nom
  * @property string|null $nom_api
+ * @property string|null $email
  * @property array<string, mixed> $prefixes
  * @property bool $trackable
  * @property array<string, mixed> $bareme_surestaries
@@ -29,6 +30,7 @@ final class Armateur extends BaseModel
     protected $fillable = [
         'nom',
         'nom_api',
+        'email',
         'prefixes',
         'trackable',
         'bareme_surestaries',

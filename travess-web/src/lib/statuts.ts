@@ -83,3 +83,25 @@ const FRANCHISE: Record<TypeFranchise, string> = {
 };
 
 export const libelleTypeFranchise = (t: TypeFranchise) => FRANCHISE[t];
+
+import type { StatutMessage, TypeDemande } from '@travess/shared-types';
+
+const MESSAGE: Record<StatutMessage, { ton: TonStatut; libelle: string }> = {
+  brouillon: { ton: 'neutre', libelle: 'Brouillon' },
+  en_file: { ton: 'encours', libelle: "En file d'envoi" },
+  en_cours: { ton: 'encours', libelle: "Envoi en cours" },
+  envoye: { ton: 'regle', libelle: 'Envoyé' },
+  echec: { ton: 'risque', libelle: 'Échec' },
+  recu: { ton: 'info', libelle: 'Reçu' },
+};
+
+const DEMANDE: Record<TypeDemande, string> = {
+  relance_surestaries: 'Relance surestaries',
+  reclamation: 'Réclamation',
+  demande_bl: 'Demande de BL',
+  demande_do: 'Demande de DO',
+  autre: 'Autre',
+};
+
+export const statutMessage = (s: StatutMessage) => MESSAGE[s];
+export const libelleTypeDemande = (t: TypeDemande) => DEMANDE[t];

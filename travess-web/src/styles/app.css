@@ -710,3 +710,104 @@
 .table-scroll {
   overflow-x: auto;
 }
+
+/* Onglet Correspondance */
+.fil {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--tv-espace-4);
+}
+.fil__item {
+  border: 1px solid var(--tv-bordure);
+  border-radius: var(--tv-rayon-md);
+  padding: var(--tv-espace-4);
+  border-left: 3px solid var(--tv-neutre-300);
+}
+.fil__item--sortant {
+  border-left-color: var(--tv-primaire);
+}
+.fil__item--entrant {
+  border-left-color: var(--tv-info);
+  background: var(--tv-neutre-50);
+}
+.fil__entete {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--tv-espace-3);
+  margin-bottom: var(--tv-espace-2);
+}
+.fil__objet {
+  font-weight: 600;
+  font-size: 14px;
+}
+.fil__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--tv-espace-3);
+  font-size: 12px;
+  color: var(--tv-texte-attenue);
+  margin-bottom: var(--tv-espace-3);
+}
+.fil__tag {
+  background: var(--tv-marque-50);
+  color: var(--tv-primaire);
+  border-radius: var(--tv-rayon-pilule);
+  padding: 1px var(--tv-espace-2);
+  font-weight: 600;
+}
+.fil__corps {
+  margin: 0;
+  font-size: 13px;
+  color: var(--tv-texte);
+  white-space: pre-wrap;
+  max-height: 6.5em;
+  overflow: hidden;
+  position: relative;
+}
+.fil__erreur {
+  margin: var(--tv-espace-2) 0 0;
+  font-size: 12px;
+  color: var(--tv-risque);
+}
+
+.composer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tv-espace-4);
+}
+.composer__champ {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.composer__label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--tv-texte-attenue);
+}
+.composer__corps {
+  width: 100%;
+  box-sizing: border-box;
+  font: inherit;
+  padding: var(--tv-espace-3);
+  border: 1px solid var(--tv-bordure);
+  border-radius: var(--tv-rayon-sm);
+  background: var(--tv-surface);
+  color: var(--tv-texte);
+  resize: vertical;
+  min-height: 8em;
+}
+.composer__corps:focus {
+  outline: 2px solid var(--tv-primaire);
+  outline-offset: -1px;
+}
+.composer__succes {
+  margin: 0;
+  font-size: 13px;
+  color: var(--tv-regle);
+  font-weight: 500;
+}

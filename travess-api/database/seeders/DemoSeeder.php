@@ -58,7 +58,7 @@ final class DemoSeeder extends Seeder
             }
 
             $client = Client::factory()->create(['nom' => 'Import Sahel SARL']);
-            $armateur = Armateur::factory()->create(['nom' => 'Maersk']);
+            $armateur = Armateur::factory()->create(['nom' => 'Maersk', 'email' => 'booking.ci@maersk.example']);
             $dossier = Dossier::factory()->create([
                 'client_id' => $client->id,
                 'sens' => 'import',

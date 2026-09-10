@@ -11,6 +11,8 @@ use App\Domains\Conteneurs\Models\Conteneur;
 use App\Domains\Conteneurs\Models\Franchise;
 use App\Domains\Conteneurs\Policies\BlPolicy;
 use App\Domains\Conteneurs\Policies\ConteneurPolicy;
+use App\Domains\Correspondance\Models\Message;
+use App\Domains\Correspondance\Policies\MessagePolicy;
 use App\Domains\Documents\Models\Document;
 use App\Domains\Documents\Policies\DocumentPolicy;
 use App\Domains\Dossiers\Models\Dossier;
@@ -71,5 +73,6 @@ final class DomainServiceProvider extends ServiceProvider
         Gate::policy(Document::class, DocumentPolicy::class);
         Gate::policy(Franchise::class, FranchisePolicy::class);
         Gate::policy(Alerte::class, AlertePolicy::class);
+        Gate::policy(Message::class, MessagePolicy::class);
     }
 }

@@ -64,3 +64,22 @@ export type TypeAlerte = (typeof TYPES_ALERTE)[number];
 
 export const STATUTS_ALERTE = ['ouverte', 'vue', 'traitee'] as const;
 export type StatutAlerte = (typeof STATUTS_ALERTE)[number];
+
+// --- Correspondance armateur ---
+export const CANAUX_MESSAGE = ['whatsapp', 'email', 'sms'] as const;
+export type CanalMessage = (typeof CANAUX_MESSAGE)[number];
+
+export const DIRECTIONS_MESSAGE = ['sortant', 'entrant'] as const;
+export type DirectionMessage = (typeof DIRECTIONS_MESSAGE)[number];
+
+export const TYPES_DEMANDE = [
+  'relance_surestaries',
+  'reclamation',
+  'demande_bl',
+  'demande_do',
+  'autre',
+] as const;
+export type TypeDemande = (typeof TYPES_DEMANDE)[number];
+
+export const STATUTS_MESSAGE = ['brouillon', 'en_file', 'en_cours', 'envoye', 'echec', 'recu'] as const;
+export type StatutMessage = (typeof STATUTS_MESSAGE)[number];

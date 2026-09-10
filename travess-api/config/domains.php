@@ -28,6 +28,7 @@ return [
         'Tracking',
         'Ingestion',
         'Alertes',
+        'Correspondance',
         'Portail',
         'Paiements',
         'Consommation',

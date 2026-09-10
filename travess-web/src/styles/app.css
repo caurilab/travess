@@ -1297,3 +1297,85 @@
 @media (max-width: 720px) {
   .suivi__grille { grid-template-columns: repeat(2, 1fr); }
 }
+
+/* Stepper de parcours conteneur */
+.stepper {
+  list-style: none;
+  margin: 0;
+  padding: var(--tv-espace-5) var(--tv-espace-4) var(--tv-espace-3);
+  display: flex;
+}
+.stepper__etape {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  position: relative;
+  text-align: center;
+}
+/* Ligne de liaison entre pastilles */
+.stepper__etape::before {
+  content: '';
+  position: absolute;
+  top: 14px;
+  right: 50%;
+  width: 100%;
+  height: 2px;
+  background: var(--tv-neutre-200);
+  z-index: 0;
+}
+.stepper__etape:first-child::before {
+  display: none;
+}
+.stepper__etape--fait::before,
+.stepper__etape--actif::before {
+  background: var(--tv-regle);
+}
+.stepper__pastille {
+  position: relative;
+  z-index: 1;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  background: var(--tv-surface);
+  border: 2px solid var(--tv-neutre-300);
+  color: var(--tv-texte-attenue);
+  transition: all 0.2s ease;
+}
+.stepper__etape--fait .stepper__pastille {
+  background: var(--tv-regle);
+  border-color: var(--tv-regle);
+  color: #fff;
+}
+.stepper__etape--actif .stepper__pastille {
+  background: var(--tv-primaire);
+  border-color: var(--tv-primaire);
+  color: #fff;
+  box-shadow: 0 0 0 4px var(--tv-marque-50);
+  animation: stepper-pulse 2s ease-in-out infinite;
+}
+@keyframes stepper-pulse {
+  0%, 100% { box-shadow: 0 0 0 4px var(--tv-marque-50); }
+  50% { box-shadow: 0 0 0 7px var(--tv-marque-50); }
+}
+.stepper__libelle {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--tv-texte-attenue);
+  line-height: 1.2;
+}
+.stepper__etape--actif .stepper__libelle {
+  color: var(--tv-primaire);
+}
+.stepper__etape--fait .stepper__libelle {
+  color: var(--tv-texte);
+}
+@media (prefers-reduced-motion: reduce) {
+  .stepper__etape--actif .stepper__pastille { animation: none; }
+}

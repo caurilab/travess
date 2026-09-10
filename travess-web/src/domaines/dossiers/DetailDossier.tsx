@@ -283,6 +283,8 @@ function ConteneurCarte({
         </div>
       </div>
 
+      <ParcoursStepper statut={c.statut} statutBrut={suivi?.statut_brut ?? null} />
+
       <div className="suivi__grille">
         <SuiviCase libelle="Dernier mouvement" valeur={suivi?.emplacement ?? '—'} />
         <SuiviCase libelle="ETA destination" valeur={suivi?.eta_destination ? dateCourte(suivi.eta_destination.slice(0, 10)) : '—'} />
@@ -290,6 +292,38 @@ function ConteneurCarte({
         <SuiviCase libelle="Mis à jour" valeur={suivi?.capture_le ? dateCourte(suivi.capture_le.slice(0, 10)) : '—'} indice={suivi ? libelleSource(suivi.source) : 'aucun suivi'} />
       </div>
     </div>
+  );
+}
+
+const ETAPES_PARCOURS = ['Chargé', 'Arrivé au port', 'Enlevé', 'Livré', 'Rendu'] as const;
+
+/** Position du conteneur dans son parcours (déduit du statut + statut brut du tracking). */
+function etapeActive(statut: string, statutBrut: string | null): number {
+  if (statut === 'rendu') return 4;
+  if (statut === 'livre') return 3;
+  if (statut === 'enleve') return 2;
+  // a_traiter : en transit, sauf si le tracking indique une arrivée/déchargement.
+  const brut = (statutBrut ?? '').toLowerCase();
+  if (/(discharg|arriv|décharg|at port|gate in)/.test(brut)) return 1;
+
+  return 0;
+}
+
+function ParcoursStepper({ statut, statutBrut }: { readonly statut: string; readonly statutBrut: string | null }) {
+  const active = etapeActive(statut, statutBrut);
+
+  return (
+    <ol className="stepper" aria-label="Parcours du conteneur">
+      {ETAPES_PARCOURS.map((libelle, i) => {
+        const etat = i < active ? 'fait' : i === active ? 'actif' : 'a-venir';
+        return (
+          <li key={libelle} className={`stepper__etape stepper__etape--${etat}`}>
+            <span className="stepper__pastille">{i < active ? '✓' : i + 1}</span>
+            <span className="stepper__libelle">{libelle}</span>
+          </li>
+        );
+      })}
+    </ol>
   );
 }
 

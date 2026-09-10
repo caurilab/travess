@@ -245,8 +245,10 @@ function ConteneurCarte({
 }) {
   const client = useQueryClient();
   const [demande, setDemande] = useState(false);
+  const [parcoursOuvert, setParcoursOuvert] = useState(false);
   const sc = statutConteneur(c.statut);
   const suivi = c.dernier_suivi ?? null;
+  const aFrise = suivi !== null && suivi.jalons.length > 0;
 
   const statutMut = useMutation({
     mutationFn: (statut: string) => mettreAJourConteneur(c.id, statut),
@@ -293,7 +295,22 @@ function ConteneurCarte({
 
       <ParcoursStepper statut={c.statut} statutBrut={suivi?.statut_brut ?? null} />
 
-      {suivi && suivi.jalons.length > 0 ? <ParcoursTimeline jalons={suivi.jalons} /> : null}
+      {aFrise ? (
+        <>
+          <button
+            type="button"
+            className="frise__bascule"
+            aria-expanded={parcoursOuvert}
+            onClick={() => setParcoursOuvert((v) => !v)}
+          >
+            <span className={`frise__chevron${parcoursOuvert ? ' frise__chevron--ouvert' : ''}`} aria-hidden="true">
+              ›
+            </span>
+            {parcoursOuvert ? 'Masquer le parcours détaillé' : 'Voir le parcours détaillé'}
+          </button>
+          {parcoursOuvert ? <ParcoursTimeline jalons={suivi.jalons} /> : null}
+        </>
+      ) : null}
 
       <div className="suivi__grille">
         <SuiviCase libelle="Dernier mouvement" valeur={suivi?.emplacement ?? '—'} />

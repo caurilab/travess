@@ -1416,6 +1416,37 @@
   .extraction-progres__glisse { animation-duration: 3s; }
 }
 
+/* Bascule d'ouverture du parcours détaillé (frise repliée par défaut) */
+.frise__bascule {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--tv-espace-2);
+  margin: 0 var(--tv-espace-4) var(--tv-espace-2);
+  padding: 6px var(--tv-espace-3);
+  background: transparent;
+  border: 1px solid var(--tv-bordure);
+  border-radius: var(--tv-rayon-pilule);
+  color: var(--tv-texte-attenue);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+.frise__bascule:hover {
+  color: var(--tv-primaire);
+  border-color: var(--tv-marque-200);
+  background: var(--tv-marque-50);
+}
+.frise__chevron {
+  display: inline-block;
+  transition: transform 0.2s ease;
+  font-size: 16px;
+  line-height: 1;
+}
+.frise__chevron--ouvert {
+  transform: rotate(90deg);
+}
+
 /* Frise verticale datée du parcours conteneur (façon suivi armateur) */
 .frise {
   list-style: none;
@@ -1423,6 +1454,14 @@
   padding: var(--tv-espace-2) var(--tv-espace-4) var(--tv-espace-4);
   display: flex;
   flex-direction: column;
+  animation: frise-apparait 0.22s ease;
+}
+@keyframes frise-apparait {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .frise { animation: none; }
 }
 .frise__jalon {
   position: relative;

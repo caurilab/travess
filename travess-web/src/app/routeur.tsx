@@ -2,6 +2,8 @@ import type { ReactNode } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 
 import { useAuth } from '../auth/AuthProvider.js';
+import { DetailDossier } from '../domaines/dossiers/DetailDossier.js';
+import { ListeDossiers } from '../domaines/dossiers/ListeDossiers.js';
 import { Accueil } from '../pages/Accueil.js';
 import { Connexion } from '../pages/Connexion.js';
 import { EnConstruction } from '../pages/EnConstruction.js';
@@ -40,7 +42,8 @@ export function Routeur() {
         }
       >
         <Route path="/" element={<Accueil />} />
-        <Route path="/dossiers" element={<EnConstruction titre="Dossiers" />} />
+        <Route path="/dossiers" element={<ListeDossiers />} />
+        <Route path="/dossiers/:id" element={<DetailDossier />} />
         <Route path="/alertes" element={<EnConstruction titre="Alertes" />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />

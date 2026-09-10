@@ -1,5 +1,5 @@
 import { useAuth } from '../auth/AuthProvider.js';
-import { Carte } from '../ui/Carte.js';
+import { TableauBord } from '../domaines/surestaries/TableauBord.js';
 
 export function Accueil() {
   const { moi } = useAuth();
@@ -13,11 +13,7 @@ export function Accueil() {
         </div>
       </header>
 
-      <Carte>
-        <p className="page__vide">
-          Le tableau de bord surestaries (« l'argent qui brûle ») arrive au prochain incrément.
-        </p>
-      </Carte>
+      <TableauBord />
     </div>
   );
 }

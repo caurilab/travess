@@ -129,3 +129,116 @@
   margin: 0;
   color: var(--tv-texte-attenue);
 }
+
+/* Tableau de bord surestaries */
+.tb {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tv-espace-6);
+}
+.tb__cartes {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: var(--tv-espace-6);
+}
+.tb__feu {
+  background: linear-gradient(150deg, var(--tv-risque), #a01912);
+  border: none;
+  color: #fff;
+}
+.tb__feu-titre {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  opacity: 0.9;
+}
+.tb__feu-montant {
+  margin: var(--tv-espace-3) 0 var(--tv-espace-2);
+  font-size: 40px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.tb__feu-sous {
+  margin: 0;
+  font-size: 14px;
+  opacity: 0.92;
+}
+.tb__stat-titre {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--tv-texte-attenue);
+}
+.tb__stat-montant {
+  margin: var(--tv-espace-3) 0 var(--tv-espace-2);
+  font-size: 34px;
+  font-weight: 800;
+  color: var(--tv-regle);
+  letter-spacing: -0.02em;
+}
+.tb__stat-sous {
+  margin: 0;
+  font-size: 14px;
+  color: var(--tv-texte-attenue);
+}
+.tb__entete-table {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: var(--tv-espace-4);
+}
+.tb__table-titre {
+  font-size: 17px;
+}
+.tb__compteur {
+  font-size: 13px;
+  color: var(--tv-texte-attenue);
+  font-weight: 600;
+}
+.tb__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.tb__table th {
+  text-align: left;
+  padding: var(--tv-espace-2) var(--tv-espace-3);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--tv-texte-attenue);
+  border-bottom: 1px solid var(--tv-bordure);
+}
+.tb__table td {
+  padding: var(--tv-espace-3);
+  border-bottom: 1px solid var(--tv-neutre-100);
+}
+.tb__table tbody tr:hover {
+  background: var(--tv-neutre-50);
+}
+.tb__numero {
+  font-family: var(--tv-police-mono);
+  font-weight: 600;
+}
+.tb__col-montant {
+  text-align: right;
+}
+.tb__menacant {
+  color: var(--tv-risque);
+  font-weight: 700;
+}
+.tb__chargement,
+.tb__vide,
+.tb__erreur {
+  padding: var(--tv-espace-6);
+  text-align: center;
+  color: var(--tv-texte-attenue);
+}
+.tb__erreur {
+  color: var(--tv-risque);
+}

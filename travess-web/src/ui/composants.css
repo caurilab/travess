@@ -1,0 +1,129 @@
+/* Composants de base Travess (design system, consommé aussi par le desktop). */
+
+/* Bouton */
+.tv-bouton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--tv-espace-2);
+  border: 1px solid transparent;
+  border-radius: var(--tv-rayon-md);
+  padding: 0 var(--tv-espace-4);
+  height: 40px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease, opacity 120ms ease;
+  white-space: nowrap;
+}
+.tv-bouton:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.tv-bouton--primaire {
+  background: var(--tv-primaire);
+  color: var(--tv-primaire-contraste);
+}
+.tv-bouton--primaire:hover:not(:disabled) {
+  background: var(--tv-marque-600);
+}
+.tv-bouton--secondaire {
+  background: var(--tv-surface);
+  color: var(--tv-texte);
+  border-color: var(--tv-bordure);
+}
+.tv-bouton--secondaire:hover:not(:disabled) {
+  background: var(--tv-neutre-100);
+}
+.tv-bouton--fantome {
+  background: transparent;
+  color: var(--tv-texte-attenue);
+}
+.tv-bouton--fantome:hover:not(:disabled) {
+  background: var(--tv-neutre-100);
+  color: var(--tv-texte);
+}
+.tv-bouton--danger {
+  background: var(--tv-risque);
+  color: #fff;
+}
+.tv-bouton--bloc {
+  width: 100%;
+}
+
+/* Champ */
+.tv-champ {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tv-espace-2);
+}
+.tv-champ__label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--tv-texte);
+}
+.tv-champ__entree {
+  height: 40px;
+  padding: 0 var(--tv-espace-3);
+  border: 1px solid var(--tv-bordure);
+  border-radius: var(--tv-rayon-md);
+  background: var(--tv-surface);
+  color: var(--tv-texte);
+  font-size: 14px;
+  outline: none;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+.tv-champ__entree:focus {
+  border-color: var(--tv-primaire);
+  box-shadow: 0 0 0 3px var(--tv-marque-100);
+}
+.tv-champ__entree[aria-invalid='true'] {
+  border-color: var(--tv-risque);
+}
+.tv-champ__erreur {
+  font-size: 12px;
+  color: var(--tv-risque);
+}
+
+/* Carte */
+.tv-carte {
+  background: var(--tv-surface);
+  border: 1px solid var(--tv-bordure);
+  border-radius: var(--tv-rayon-lg);
+  box-shadow: var(--tv-ombre-sm);
+  padding: var(--tv-espace-6);
+}
+
+/* Badge de statut */
+.tv-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 10px;
+  border-radius: var(--tv-rayon-pilule);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 20px;
+  white-space: nowrap;
+}
+.tv-badge__point {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+/* Spinner */
+.tv-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--tv-neutre-200);
+  border-top-color: var(--tv-primaire);
+  border-radius: 50%;
+  animation: tv-tourne 700ms linear infinite;
+}
+@keyframes tv-tourne {
+  to {
+    transform: rotate(360deg);
+  }
+}

@@ -10,18 +10,19 @@
  * inspirations (_reference_design). Les rôles, eux, sont stables.
  */
 export const couleurs = {
-  // Marque (corail).
+  // Marque (corail-rouge). Recalibrée sur la dominante des inspirations
+  // (_reference_design) : rouge chaud, distinct du rouge pur du danger.
   marque: {
-    50: '#FFF3EF',
-    100: '#FFE1D8',
-    200: '#FFC2B0',
-    300: '#FF9C82',
-    400: '#F87556',
-    500: '#EA5A3D', // corail principal
-    600: '#C9452B',
-    700: '#A13521',
-    800: '#78271A',
-    900: '#4F1A11',
+    50: '#FFF4F1',
+    100: '#FFE3DC',
+    200: '#FFC4B7',
+    300: '#FB9C88',
+    400: '#F4785E',
+    500: '#EE5A44', // corail-rouge principal
+    600: '#D6412C',
+    700: '#B03222',
+    800: '#86271B',
+    900: '#571913',
   },
 
   // Sémantique de statut.

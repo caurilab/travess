@@ -1,0 +1,46 @@
+@import '@travess/ui/tokens.css';
+
+/* Réinitialisation légère + base. */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#racine {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--tv-police);
+  color: var(--tv-texte);
+  background: var(--tv-fond);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+a {
+  color: var(--tv-primaire);
+  text-decoration: none;
+}
+
+button {
+  font-family: inherit;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  margin: 0;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+/* Nombres tabulaires (montants, compteurs). */
+.tv-tabulaire {
+  font-variant-numeric: tabular-nums;
+}

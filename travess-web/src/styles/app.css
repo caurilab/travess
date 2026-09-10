@@ -1,0 +1,131 @@
+/* Mise en page de l'application agent. */
+
+.plein-ecran {
+  height: 100%;
+  display: grid;
+  place-items: center;
+}
+
+/* Connexion */
+.connexion {
+  min-height: 100%;
+  display: grid;
+  place-items: center;
+  padding: var(--tv-espace-6);
+  background: linear-gradient(160deg, var(--tv-marque-50), var(--tv-neutre-50) 55%);
+}
+.connexion__carte {
+  width: 100%;
+  max-width: 380px;
+}
+.connexion__marque {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--tv-primaire);
+  letter-spacing: -0.02em;
+}
+.connexion__sous-titre {
+  margin: 4px 0 var(--tv-espace-6);
+  color: var(--tv-texte-attenue);
+  font-size: 14px;
+}
+.connexion__form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tv-espace-4);
+}
+.connexion__erreur {
+  margin: 0;
+  color: var(--tv-risque);
+  font-size: 13px;
+}
+
+/* Shell */
+.shell {
+  display: grid;
+  grid-template-columns: 248px 1fr;
+  min-height: 100%;
+}
+.shell__nav {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tv-espace-6);
+  padding: var(--tv-espace-6);
+  background: var(--tv-surface);
+  border-right: 1px solid var(--tv-bordure);
+}
+.shell__marque {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--tv-primaire);
+  letter-spacing: -0.02em;
+}
+.shell__liens {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+.shell__lien {
+  padding: var(--tv-espace-2) var(--tv-espace-3);
+  border-radius: var(--tv-rayon-md);
+  color: var(--tv-texte-attenue);
+  font-size: 14px;
+  font-weight: 600;
+}
+.shell__lien:hover {
+  background: var(--tv-neutre-100);
+  color: var(--tv-texte);
+}
+.shell__lien--actif {
+  background: var(--tv-marque-50);
+  color: var(--tv-primaire);
+}
+.shell__pied {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tv-espace-2);
+  border-top: 1px solid var(--tv-bordure);
+  padding-top: var(--tv-espace-4);
+}
+.shell__agence {
+  font-weight: 700;
+  font-size: 14px;
+}
+.shell__utilisateur {
+  font-size: 13px;
+  color: var(--tv-texte-attenue);
+  margin-bottom: var(--tv-espace-2);
+}
+.shell__contenu {
+  padding: var(--tv-espace-8);
+  overflow: auto;
+}
+
+/* Pages */
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tv-espace-6);
+  max-width: 1200px;
+}
+.page__entete {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.page__surtitre {
+  margin: 0;
+  color: var(--tv-texte-attenue);
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.page__titre {
+  font-size: 26px;
+}
+.page__vide {
+  margin: 0;
+  color: var(--tv-texte-attenue);
+}

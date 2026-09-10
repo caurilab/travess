@@ -1,0 +1,49 @@
+import type { ReactNode } from 'react';
+import { Navigate, Route, Routes } from 'react-router-dom';
+
+import { useAuth } from '../auth/AuthProvider.js';
+import { Accueil } from '../pages/Accueil.js';
+import { Connexion } from '../pages/Connexion.js';
+import { EnConstruction } from '../pages/EnConstruction.js';
+import { AppShell } from './AppShell.js';
+
+function Protege({ children }: { readonly children: ReactNode }) {
+  const { statut } = useAuth();
+
+  if (statut === 'chargement') {
+    return (
+      <div className="plein-ecran">
+        <span className="tv-spinner" />
+      </div>
+    );
+  }
+  if (statut === 'anonyme') {
+    return <Navigate to="/connexion" replace />;
+  }
+  return children;
+}
+
+export function Routeur() {
+  const { statut } = useAuth();
+
+  return (
+    <Routes>
+      <Route
+        path="/connexion"
+        element={statut === 'connecte' ? <Navigate to="/" replace /> : <Connexion />}
+      />
+      <Route
+        element={
+          <Protege>
+            <AppShell />
+          </Protege>
+        }
+      >
+        <Route path="/" element={<Accueil />} />
+        <Route path="/dossiers" element={<EnConstruction titre="Dossiers" />} />
+        <Route path="/alertes" element={<EnConstruction titre="Alertes" />} />
+      </Route>
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  );
+}

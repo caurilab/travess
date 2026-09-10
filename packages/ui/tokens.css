@@ -4,15 +4,17 @@
  * Thème clair (le thème sombre sera ajouté ultérieurement).
  */
 :root {
-  /* Marque (corail) */
-  --tv-marque-50: #fff3ef;
-  --tv-marque-100: #ffe1d8;
-  --tv-marque-200: #ffc2b0;
-  --tv-marque-300: #ff9c82;
-  --tv-marque-400: #f87556;
-  --tv-marque-500: #ea5a3d;
-  --tv-marque-600: #c9452b;
-  --tv-marque-700: #a13521;
+  /* Marque (corail-rouge, recalibrée sur _reference_design) */
+  --tv-marque-50: #fff4f1;
+  --tv-marque-100: #ffe3dc;
+  --tv-marque-200: #ffc4b7;
+  --tv-marque-300: #fb9c88;
+  --tv-marque-400: #f4785e;
+  --tv-marque-500: #ee5a44;
+  --tv-marque-600: #d6412c;
+  --tv-marque-700: #b03222;
+  --tv-marque-800: #86271b;
+  --tv-marque-900: #571913;
 
   /* Sémantique de statut */
   --tv-risque: #d92d20;

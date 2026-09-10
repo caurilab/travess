@@ -4,6 +4,8 @@ packages:
   - "travess-desktop"
   - "packages/*"
 
-# Autorise esbuild (utilisé par tsup/vitest) à exécuter son script de build.
+# Autorise esbuild (tsup/vitest/vite) à exécuter son script d'installation.
+allowBuilds:
+  esbuild: true
 onlyBuiltDependencies:
   - esbuild

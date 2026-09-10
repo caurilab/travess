@@ -108,7 +108,7 @@ final class DossierController
     {
         Gate::authorize('view', $dossier);
 
-        $dossier->load(['client', 'etapes', 'agents', 'bls.conteneurs', 'documents']);
+        $dossier->load(['client', 'etapes', 'agents', 'bls.conteneurs.suivis', 'documents']);
 
         return DossierResource::make($dossier);
     }

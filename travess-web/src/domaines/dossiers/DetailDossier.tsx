@@ -1,10 +1,16 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { STATUTS_CONTENEUR, STATUTS_ETAPE, TYPES_CONTENEUR, type DossierDTO } from '@travess/shared-types';
+import {
+  STATUTS_CONTENEUR,
+  STATUTS_ETAPE,
+  TYPES_CONTENEUR,
+  type ConteneurDTO,
+  type DossierDTO,
+} from '@travess/shared-types';
 import { useState, type FormEvent } from 'react';
 import { Link, useParams } from 'react-router-dom';
 
 import { ErreurRequete } from '../../api/client.js';
-import { creerConteneur, mettreAJourConteneur } from '../conteneurs/api.js';
+import { creerConteneur, mettreAJourConteneur, rafraichirTracking } from '../conteneurs/api.js';
 import { OngletCorrespondance } from '../correspondance/OngletCorrespondance.js';
 import { OngletDocuments } from '../documents/OngletDocuments.js';
 import { emettreInvitation, lienFrontInvitation } from '../portail/api.js';
@@ -188,58 +194,117 @@ function OngletParcours({ dossier, onChangement }: { readonly dossier: DossierDT
 }
 
 function OngletConteneurs({ dossier, onChangement }: { readonly dossier: DossierDTO; readonly onChangement: () => void }) {
-  const conteneur = useMutation({
-    mutationFn: ({ conteneurId, statut }: { conteneurId: string; statut: string }) =>
-      mettreAJourConteneur(conteneurId, statut),
+  return (
+    <div className="detail__colonne">
+      {(dossier.bls ?? []).map((bl) => (
+        <Carte key={bl.id}>
+          <div className="suivi__bl-entete">
+            <div>
+              <p className="fiche__surtitre">Connaissement</p>
+              <span className="suivi__bl-numero">{bl.numero}</span>
+            </div>
+            <div className="suivi__bl-navire">
+              <span className="suivi__bl-navire-nom">{bl.navire_nom ?? 'Navire n/c'}</span>
+              {bl.navire_imo !== null ? <span className="suivi__bl-navire-imo">IMO {bl.navire_imo}</span> : null}
+            </div>
+          </div>
+
+          <div className="suivi__cartes">
+            {(bl.conteneurs ?? []).map((c) => (
+              <ConteneurCarte key={c.id} conteneur={c} onChangement={onChangement} />
+            ))}
+            {(bl.conteneurs ?? []).length === 0 ? <p className="tb__vide">Aucun conteneur.</p> : null}
+          </div>
+
+          <AjouterConteneur blId={bl.id} onAjout={onChangement} />
+        </Carte>
+      ))}
+      {(dossier.bls ?? []).length === 0 ? (
+        <Carte>
+          <p className="tb__vide">Aucun BL.</p>
+        </Carte>
+      ) : null}
+    </div>
+  );
+}
+
+function ConteneurCarte({
+  conteneur: c,
+  onChangement,
+}: {
+  readonly conteneur: ConteneurDTO;
+  readonly onChangement: () => void;
+}) {
+  const client = useQueryClient();
+  const [demande, setDemande] = useState(false);
+  const sc = statutConteneur(c.statut);
+  const suivi = c.dernier_suivi ?? null;
+
+  const statutMut = useMutation({
+    mutationFn: (statut: string) => mettreAJourConteneur(c.id, statut),
     onSuccess: onChangement,
   });
 
+  const rafraichir = useMutation({
+    mutationFn: () => rafraichirTracking(c.id),
+    onSuccess: () => {
+      setDemande(true);
+      // Le suivi est mis à jour en file : on relit la fiche peu après.
+      window.setTimeout(() => void client.invalidateQueries({ queryKey: ['dossier', c.bl_id] }), 2500);
+    },
+  });
+
   return (
-    <Carte>
-      <h2 className="detail__titre-carte">Conteneurs · suivi &amp; surestaries</h2>
-      {(dossier.bls ?? []).map((bl) => (
-        <div key={bl.id} className="bl">
-          <div className="bl__entete">
-            <span className="tb__numero">{bl.numero}</span>
-            <span className="bl__navire">{bl.navire_nom ?? 'Navire n/c'}</span>
-          </div>
-          <table className="tb__table">
-            <thead>
-              <tr>
-                <th>Conteneur</th>
-                <th>Type</th>
-                <th>Statut</th>
-              </tr>
-            </thead>
-            <tbody>
-              {(bl.conteneurs ?? []).map((c) => (
-                <tr key={c.id}>
-                  <td className="tb__numero">{c.numero}</td>
-                  <td>{c.type.toUpperCase()}</td>
-                  <td>
-                    <select
-                      className="detail__select-mini"
-                      value={c.statut}
-                      disabled={conteneur.isPending}
-                      onChange={(ev) => conteneur.mutate({ conteneurId: c.id, statut: ev.target.value })}
-                    >
-                      {STATUTS_CONTENEUR.map((s) => (
-                        <option key={s} value={s}>
-                          {statutConteneur(s).libelle}
-                        </option>
-                      ))}
-                    </select>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          <AjouterConteneur blId={bl.id} onAjout={onChangement} />
+    <div className="suivi__carte">
+      <div className="suivi__carte-tete">
+        <span className="suivi__conteneur-numero">{c.numero}</span>
+        <span className="suivi__conteneur-type">{c.type.toUpperCase()}</span>
+        <BadgeStatut ton={sc.ton}>{sc.libelle}</BadgeStatut>
+        <div className="suivi__carte-actions">
+          <select
+            className="detail__select-mini"
+            value={c.statut}
+            disabled={statutMut.isPending}
+            onChange={(ev) => statutMut.mutate(ev.target.value)}
+          >
+            {STATUTS_CONTENEUR.map((s) => (
+              <option key={s} value={s}>
+                {statutConteneur(s).libelle}
+              </option>
+            ))}
+          </select>
+          <Bouton
+            variante="fantome"
+            chargement={rafraichir.isPending}
+            onClick={() => rafraichir.mutate()}
+          >
+            {demande ? 'Suivi demandé ✓' : 'Rafraîchir le suivi'}
+          </Bouton>
         </div>
-      ))}
-      {(dossier.bls ?? []).length === 0 ? <p className="tb__vide">Aucun BL.</p> : null}
-    </Carte>
+      </div>
+
+      <div className="suivi__grille">
+        <SuiviCase libelle="Dernier mouvement" valeur={suivi?.emplacement ?? '—'} />
+        <SuiviCase libelle="ETA destination" valeur={suivi?.eta_destination ? dateCourte(suivi.eta_destination.slice(0, 10)) : '—'} />
+        <SuiviCase libelle="Navire" valeur={suivi?.navire_nom ?? '—'} indice={suivi?.navire_imo ? `IMO ${suivi.navire_imo}` : undefined} />
+        <SuiviCase libelle="Mis à jour" valeur={suivi?.capture_le ? dateCourte(suivi.capture_le.slice(0, 10)) : '—'} indice={suivi ? libelleSource(suivi.source) : 'aucun suivi'} />
+      </div>
+    </div>
   );
+}
+
+function SuiviCase({ libelle, valeur, indice }: { readonly libelle: string; readonly valeur: string; readonly indice?: string }) {
+  return (
+    <div className="suivi__case">
+      <span className="suivi__case-libelle">{libelle}</span>
+      <span className="suivi__case-valeur">{valeur}</span>
+      {indice !== undefined ? <span className="suivi__case-indice">{indice}</span> : null}
+    </div>
+  );
+}
+
+function libelleSource(source: 'jsoncargo' | 'imap' | 'manuel'): string {
+  return source === 'jsoncargo' ? 'via tracking' : source === 'imap' ? 'via e-mail' : 'manuel';
 }
 
 function OngletFinances({ dossier }: { readonly dossier: DossierDTO }) {

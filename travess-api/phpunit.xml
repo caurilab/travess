@@ -34,6 +34,12 @@
         <env name="MAIL_MAILER" value="array"/>
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER" value="array"/>
+        <!-- Fournisseurs externes en « factice » : la suite reste déterministe,
+             gratuite et hors-réseau, quelles que soient les clés du .env local. -->
+        <env name="IA_DRIVER" value="factice" force="true"/>
+        <env name="TRACKING_DRIVER" value="factice" force="true"/>
+        <env name="MESSAGERIE_DRIVER" value="factice" force="true"/>
+        <env name="OTP_DRIVER" value="factice" force="true"/>
         <env name="PULSE_ENABLED" value="false"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
         <env name="NIGHTWATCH_ENABLED" value="false"/>

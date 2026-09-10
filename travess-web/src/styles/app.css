@@ -1198,3 +1198,102 @@
   font-weight: 600;
   color: var(--tv-texte-attenue);
 }
+
+/* Suivi conteneurs (façon page tracking) */
+.suivi__bl-entete {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--tv-espace-4);
+  padding-bottom: var(--tv-espace-4);
+  border-bottom: 1px solid var(--tv-bordure);
+  margin-bottom: var(--tv-espace-4);
+}
+.suivi__bl-numero {
+  font-family: var(--tv-police-mono);
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.suivi__bl-navire {
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+}
+.suivi__bl-navire-nom {
+  font-weight: 600;
+  font-size: 14px;
+}
+.suivi__bl-navire-imo {
+  font-size: 12px;
+  color: var(--tv-texte-attenue);
+  font-variant-numeric: tabular-nums;
+}
+.suivi__cartes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tv-espace-4);
+  margin-bottom: var(--tv-espace-5);
+}
+.suivi__carte {
+  border: 1px solid var(--tv-bordure);
+  border-radius: var(--tv-rayon-md);
+  overflow: hidden;
+}
+.suivi__carte-tete {
+  display: flex;
+  align-items: center;
+  gap: var(--tv-espace-3);
+  flex-wrap: wrap;
+  padding: var(--tv-espace-4);
+  background: var(--tv-neutre-50);
+  border-bottom: 1px solid var(--tv-bordure);
+}
+.suivi__conteneur-numero {
+  font-family: var(--tv-police-mono);
+  font-weight: 700;
+  font-size: 15px;
+}
+.suivi__conteneur-type {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--tv-texte-attenue);
+  background: var(--tv-neutre-100);
+  padding: 2px var(--tv-espace-2);
+  border-radius: var(--tv-rayon-sm);
+}
+.suivi__carte-actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: var(--tv-espace-3);
+}
+.suivi__grille {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--tv-espace-4);
+  padding: var(--tv-espace-4);
+}
+.suivi__case {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.suivi__case-libelle {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--tv-texte-attenue);
+}
+.suivi__case-valeur {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--tv-texte);
+}
+.suivi__case-indice {
+  font-size: 11px;
+  color: var(--tv-texte-attenue);
+}
+@media (max-width: 720px) {
+  .suivi__grille { grid-template-columns: repeat(2, 1fr); }
+}

@@ -5,6 +5,7 @@ import { Link, useParams } from 'react-router-dom';
 
 import { creerConteneur, mettreAJourConteneur } from '../conteneurs/api.js';
 import { OngletDocuments } from '../documents/OngletDocuments.js';
+import { OngletEcheances } from './OngletEcheances.js';
 import { BadgeStatut } from '../../ui/BadgeStatut.js';
 import { Bouton } from '../../ui/Bouton.js';
 import { Carte } from '../../ui/Carte.js';
@@ -12,11 +13,12 @@ import { dateCourte, montant } from '../../lib/format.js';
 import { statutConteneur, statutDossier, statutEtape } from '../../lib/statuts.js';
 import { chargerDossier, cloturerDossier, mettreAJourEtape } from './api.js';
 
-type Onglet = 'parcours' | 'conteneurs' | 'documents' | 'finances';
+type Onglet = 'parcours' | 'conteneurs' | 'echeances' | 'documents' | 'finances';
 
 const ONGLETS: readonly { readonly cle: Onglet; readonly libelle: string }[] = [
   { cle: 'parcours', libelle: 'Parcours' },
   { cle: 'conteneurs', libelle: 'Conteneurs' },
+  { cle: 'echeances', libelle: 'Échéances / Douane' },
   { cle: 'documents', libelle: 'Documents' },
   { cle: 'finances', libelle: 'Finances' },
 ];
@@ -114,6 +116,7 @@ export function DetailDossier() {
 
       {onglet === 'parcours' ? <OngletParcours dossier={d} onChangement={rafraichir} /> : null}
       {onglet === 'conteneurs' ? <OngletConteneurs dossier={d} onChangement={rafraichir} /> : null}
+      {onglet === 'echeances' ? <OngletEcheances dossier={d} /> : null}
       {onglet === 'documents' ? <OngletDocuments dossier={d} onChangement={rafraichir} /> : null}
       {onglet === 'finances' ? <OngletFinances dossier={d} /> : null}
     </div>

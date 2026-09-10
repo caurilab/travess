@@ -669,3 +669,44 @@
   padding-top: var(--tv-espace-4);
   border-top: 1px solid var(--tv-bordure);
 }
+
+/* Onglet Échéances / Douane */
+.echeances__entete {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--tv-espace-4);
+  margin-bottom: var(--tv-espace-4);
+}
+.echeances__entete .detail__titre-carte {
+  margin-bottom: 0;
+}
+.echeances__menace {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--tv-risque);
+  font-variant-numeric: tabular-nums;
+}
+.echeances th,
+.echeances td {
+  vertical-align: middle;
+}
+.echeances__droite {
+  text-align: right;
+}
+.echeances__danger {
+  color: var(--tv-risque);
+  font-weight: 600;
+}
+.echeances__faite {
+  font-size: 13px;
+  color: var(--tv-texte-attenue);
+}
+.echeances tfoot td {
+  font-weight: 600;
+  border-top: 2px solid var(--tv-bordure);
+}
+
+.table-scroll {
+  overflow-x: auto;
+}

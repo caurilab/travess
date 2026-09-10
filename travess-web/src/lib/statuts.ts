@@ -74,3 +74,12 @@ const DOC: Record<TypeDocument, string> = {
 
 export const statutIngestion = (s: StatutIngestion) => INGESTION[s];
 export const libelleTypeDocument = (t: TypeDocument) => DOC[t];
+
+import type { TypeFranchise } from '@travess/shared-types';
+
+const FRANCHISE: Record<TypeFranchise, string> = {
+  surestaries: 'Surestaries',
+  detention: 'Détention',
+};
+
+export const libelleTypeFranchise = (t: TypeFranchise) => FRANCHISE[t];

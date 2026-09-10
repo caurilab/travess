@@ -7,6 +7,7 @@ const NAVIGATION = [
   { vers: '/', libelle: 'Tableau de bord', exact: true },
   { vers: '/dossiers', libelle: 'Dossiers' },
   { vers: '/clients', libelle: 'Clients' },
+  { vers: '/demandes', libelle: 'Demandes' },
   { vers: '/alertes', libelle: 'Alertes' },
   { vers: '/rapports', libelle: 'Rapports' },
 ] as const;

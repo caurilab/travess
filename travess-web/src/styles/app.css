@@ -1007,3 +1007,23 @@
   font-size: 14px;
   color: var(--tv-texte-attenue);
 }
+
+/* Portail — sections (mes dossiers / partagés) */
+.portail__section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tv-espace-4);
+}
+.portail__section-titre {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--tv-texte-attenue);
+  margin: 0;
+}
+
+.assignation__actions {
+  display: flex;
+  gap: var(--tv-espace-3);
+}

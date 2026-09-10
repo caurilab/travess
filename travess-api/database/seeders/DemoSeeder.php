@@ -39,8 +39,12 @@ final class DemoSeeder extends Seeder
 
         // Active l'ingestion IA (opt-in) pour la démo : l'onglet Documents peut
         // lancer l'extraction (driver « factice » en dev, sans clé ni réseau).
-        if (($tenant->parametres['ia_activee'] ?? false) !== true) {
-            $tenant->forceFill(['parametres' => [...($tenant->parametres ?? []), 'ia_activee' => true]])->save();
+        // Rend aussi le transitaire visible dans l'annuaire (surface autonome).
+        if (($tenant->parametres['ia_activee'] ?? false) !== true || $tenant->annuaire_public !== true) {
+            $tenant->forceFill([
+                'parametres' => [...($tenant->parametres ?? []), 'ia_activee' => true],
+                'annuaire_public' => true,
+            ])->save();
         }
 
         if (User::where('email', 'demo@travess.ci')->doesntExist()) {

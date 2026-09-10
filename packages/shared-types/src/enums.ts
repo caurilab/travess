@@ -83,3 +83,10 @@ export type TypeDemande = (typeof TYPES_DEMANDE)[number];
 
 export const STATUTS_MESSAGE = ['brouillon', 'en_file', 'en_cours', 'envoye', 'echec', 'recu'] as const;
 export type StatutMessage = (typeof STATUTS_MESSAGE)[number];
+
+// --- Portail (posture dossier & demandes d'assignation) ---
+export const POSTURES_DOSSIER = ['autonome', 'gere_par_transitaire'] as const;
+export type PostureDossier = (typeof POSTURES_DOSSIER)[number];
+
+export const STATUTS_DEMANDE = ['en_attente', 'acceptee', 'refusee', 'expiree', 'annulee'] as const;
+export type StatutDemande = (typeof STATUTS_DEMANDE)[number];

@@ -214,6 +214,37 @@
 - **m2** — `runBypassed` **lève la RLS globalement** pendant la fenêtre de re-tenant ; il est **borné par un prédicat mono-dossier** (un seul `dossier_id`). Écart assumé vs la « liste explicite de `dossier_id` » posée en conséquence d'ADR-013.
 - **m3** — les **notifications restent chez le client** après la bascule (pas de re-tenant du journal de notifications) : **pas de fuite financière**, journal cloisonné par tenant. À réévaluer si besoin ultérieur.
 
+## Avancement — Frontend transitaire (React) — lots F0 → F7
+
+> Livré et fusionné sur `main`. Surface **agent** (transitaire) en React 19, consommant l'API `/api/v1`. Le portail client (surface distincte) n'est pas commencé.
+
+**Fait et vérifié :**
+- **F0 — Socle + connexion/2FA** : scaffold `travess-web`, authentification (login, défi 2FA TOTP, `me`/refresh/logout), shell applicatif (navigation, garde de session).
+- **F1 — Tableau de bord surestaries** : écran « argent qui brûle » (menaçant cumulé + conteneurs à risque), branché sur `GET /dashboard/argent-en-feu` et `/dashboard/surestaries-evitees`.
+- **F2 — Liste + fiche dossier** : liste filtrable et paginée des dossiers, navigation vers le détail.
+- **F3 — Alertes surestaries** : écran de traitement des alertes (`GET /alertes`, `PATCH /alertes/{id}`).
+- **F4 → F7 — Fiche dossier actionnable, à onglets** : **Parcours**, **Conteneurs**, **Échéances / Douane**, **Documents + IA** (dépôt, lancement d'extraction, validation humaine), **Correspondance** (fil + composer « Demande par mail » : type → brouillon → édition → envoi, badges d'état, invalidation react-query), **Finances**.
+
+**Reste à faire côté front :**
+- **Rapports** — écran non commencé.
+- **Clients (CRUD)** — non commencé ; **bloqué par un endpoint backend absent** : `GET/POST /clients` n'existe pas encore côté API (à livrer avant l'écran).
+- **Portail client** — surface distincte de la surface agent, non commencée (le socle d'accès backend est livré aux lots 7.x).
+
+## Avancement — Backend Correspondance armateur (lot F7)
+
+> Terminé, fusionné sur `main`. Décision consignée en ADR-014. Correctifs d'audit et de revue intégrés.
+
+**Fait et vérifié :**
+- **Nouveau domaine `App\Domains\Correspondance`** (et non une extension de `Messagerie`, qui reste l'infra de transport isolable — principe n°9, ADR-014). Table **`messages`** = fil de correspondance d'un dossier (RLS + FK composites tenant, ADR-004 ; `auteur_id` hors schéma composite, `nullOnDelete`).
+- **Réutilise l'infra Messagerie** via un gabarit `correspondance_libre` + `CorrespondanceMail`, **sans modifier le contrat `ExpediteurMessage`**.
+- **Snapshot du destinataire** (`messages.destinataire_adresse`) figé sur chaque message (valeur probante) ; ajout de `armateurs.email` (destinataire de carnet, PII tierce sous la RLS de `armateurs`).
+- **Envoi asynchrone** (principe n°4) : Action `CreerEtEnvoyerMessage` (statut `en_file`, dispatch `afterCommit`) → job `EnvoyerMessageCorrespondance` (`JobTenantScoped`) ; réponse **202**. Brouillon pré-rempli via `GenererBrouillon`, validé par l'humain (principe n°5).
+- **Sécurité (correctifs d'audit)** : anti-exfiltration B1 (armateur désigné ⇒ envoi exclusif à son e-mail ; adresse libre réservée au gérant), canal e-mail seul au premier lot (whatsapp/sms différés via `ExpediteurDiffere`), `throttle:20,1`, idempotence anti double-envoi par transition atomique `en_file → en_cours`, `failed()` rebasculant `en_cours → échec`, audit à la mise en file (`correspondance.mise_en_file`) et à l'aboutissement (`correspondance.aboutie`).
+- **`messages` classé enfant de l'agrégat dossier** dans `MigrerProprieteDossier` (ADR-013) : suit le dossier lors d'une migration de propriété, jamais orphelin.
+- **Contrat d'API** : `GET/POST /dossiers/{id}/messages`, `POST /dossiers/{id}/messages/brouillon`, `GET /messages/{id}` ; `packages/shared-types` en découle (principe n°2).
+- **Périmètre reporté** (ADR-014) : entrant IMAP + matching, WhatsApp/SMS réels, pièces jointes, relance auto d'un échec, recherche plein-texte, pagination du fil au-delà de 25.
+- **Tests** : correspondance **14/14**, suite complète **194/194** verte, Pint + Larastan 0.
+
 ## Questions ouvertes
 
 - Table de correspondance précise `container_status` → statut Travess (à établir sur données réelles).
@@ -222,6 +253,8 @@
 
 ## Journal
 
+- **2026-09-10** — **Lot F7 complet — Correspondance armateur** (backend + front, fusionné sur `main`, commits e0df514 + 6e85115) : nouveau domaine `App\Domains\Correspondance` (et non une extension de `Messagerie`, qui reste l'infra de transport isolable — principe n°9), table `messages` (fil de correspondance d'un dossier, RLS + FK composites tenant). Réutilise l'infra Messagerie via un gabarit `correspondance_libre` + `CorrespondanceMail` sans modifier le contrat `ExpediteurMessage`. Snapshot du destinataire figé sur le message (valeur probante) + `armateurs.email` (destinataire de carnet, PII sous RLS). Envoi asynchrone (Action `CreerEtEnvoyerMessage` → job `EnvoyerMessageCorrespondance`, réponse 202) ; brouillon pré-rempli validé par l'humain. Sécurité : anti-exfiltration B1 (armateur désigné ⇒ envoi exclusif à son e-mail, adresse libre réservée au gérant), canal e-mail seul (whatsapp/sms différés), throttle:20,1, idempotence par transition atomique `en_file → en_cours` + `failed()` rebasculant en échec, audit mise en file + aboutissement. `messages` classé enfant de l'agrégat dossier dans `MigrerProprieteDossier` (ADR-013). Contrat d'API `GET/POST /dossiers/{id}/messages`, `POST .../brouillon`, `GET /messages/{id}` ; shared-types en découle. Périmètre reporté : entrant IMAP + matching, WhatsApp/SMS réels, pièces jointes, relance auto d'un échec, recherche plein-texte, pagination du fil au-delà de 25. Front : onglet Correspondance (composer « Demande par mail »). Correspondance 14/14, suite complète 194/194 verte, Pint + Larastan 0. ADR-014.
+- **2026-09-10** — **Frontend transitaire (React) — lots F0 → F7 fusionnés sur `main`** : surface agent en React 19 consommant `/api/v1`. F0 socle + connexion/2FA + shell ; F1 tableau de bord surestaries (« argent qui brûle ») ; F2 liste + fiche dossier ; F3 écran alertes ; F4 → F7 fiche dossier actionnable à onglets (Parcours / Conteneurs / Échéances-Douane / Documents+IA / Correspondance / Finances). Reste à faire côté front : Rapports, Clients (CRUD, bloqué par l'endpoint backend `GET/POST /clients` absent), portail client (surface distincte non commencée).
 - **2026-09-10** — **Lot 7.2b complet** (Expéditeur e-mail réel) : `ExpediteurEmail` (mailable `InvitationMail`) branché derrière `ExpediteurMessage` en driver `reel` (MESSAGERIE_DRIVER=reel), envoi SYNCHRONE depuis le job `EnvoyerInvitation` (le lien secret ne transite pas par la file). WhatsApp/SMS restent différés (`ExpediteurDiffere`) en attendant les fournisseurs agréés (7.2c). 180 tests verts, Pint + Larastan 0. Dépendance prod : configurer MAIL_* + SPF/DKIM/DMARC sur travess.ci.
 - **2026-09-10** — **Lot 7.4 complet** (Annuaire opt-in des transitaires) : un transitaire (gérant) active sa visibilité dans l'annuaire de la plateforme (`tenants.annuaire_public`, Action auditée) ; un client autonome ne voit et n'assigne que les transitaires opt-in (`GET /portail/autonome/annuaire`, `DemanderAssignation` refuse un transitaire hors annuaire → 422). Surfaces et Resources dédiées (liste blanche id/nom). 179 tests verts, Pint + Larastan 0. Met en œuvre ADR-013 (décision produit : annuaire opt-in). Restent 7.2b (email réel) et 7.5 (Mobile Money).
 - **2026-09-10** — **Lot 7.3b complet** (Assignation & migration de propriété) : demande d'assignation client → transitaire via la table inter-tenant `demande_assignation` (seconde exception documentée aux FK composites d'ADR-004, comme `acces_dossier` — pas de `BelongsToTenant`, RLS dédiée lecture demandeur/cible + insertion réservée au demandeur pour un dossier possédé et autonome + décision aux deux parties, unicité partielle « une demande pendante par dossier »), décision réservée à la cible transitaire (vérifiée explicitement). FK composites de l'agrégat dossier passées en `DEFERRABLE INITIALLY IMMEDIATE` (inchangé hors migration ; `SET CONSTRAINTS ALL DEFERRED` pendant le re-tenant puis `IMMEDIATE`). Migration de propriété (`MigrerProprieteDossier`) transactionnelle et auditée : re-tenant de l'agrégat sous verrou + bypass borné au seul dossier, remap armateur vers le tenant transitaire, régénération de la référence (unicité par tenant), fiche client créée chez le transitaire, octroi `acces_dossier` niveau `limite` actif au client, posture → `gere_par_transitaire`, audit bilatéral ; invariant anti-orphelin garanti par un test de complétude piloté par le schéma, `dossier_user`/`paiements`/`invitation_portail` « gardés » (migration refusée si attachés). 175 tests verts, Pint + Larastan 0. Audit sécurité passé (NO-GO initial sur la complétude de l'agrégat B1 et la garde de la cible M1, tous deux corrigés). Met en œuvre ADR-013 (amendement 7.3b). Dette : m2 (`runBypassed` lève la RLS globalement pendant la fenêtre de re-tenant, borné par prédicat mono-dossier — écart assumé vs « liste explicite de `dossier_id` »), m3 (notifications restent chez le client après bascule — pas de fuite financière, journal par tenant). Restent 7.2b (email transactionnel réel), 7.4 (annuaire opt-in) et 7.5 (Mobile Money).

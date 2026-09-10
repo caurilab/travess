@@ -110,12 +110,14 @@ POST   /missions/{id}/bon-livraison→ scan à la remise
 ```
 
 ## 12. Communication
+Correspondance armateur livrée (lot F7, domaine `Correspondance`, ADR-014) :
 ```
-GET    /dossiers/{id}/messages     → fil (interne, armateur, client)
-POST   /dossiers/{id}/messages     → message interne
-POST   /messages/imap/sync         → synchronisation passerelle armateur
-POST   /messages/whatsapp/envoyer  → notification sortante (template)
+GET    /dossiers/{id}/messages          → fil de correspondance du dossier
+POST   /dossiers/{id}/messages          → crée + envoie (async, 202) une demande armateur
+POST   /dossiers/{id}/messages/brouillon→ brouillon pré-rempli (type → objet/corps), l'humain valide
+GET    /messages/{id}                   → détail d'un message
 ```
+Reporté (ADR-014) : entrant `POST /messages/imap/sync` (synchronisation + matching), `POST /messages/whatsapp/envoyer` (canal réel ; whatsapp/sms différés au premier lot), pièces jointes, relance auto d'un échec, recherche plein-texte, pagination du fil au-delà de 25.
 
 ## 13. Administration tenant
 ```

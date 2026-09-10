@@ -55,6 +55,7 @@ paiement ──> encaissement / honoraire
 | tenant_id | uuid | (barème personnalisable par tenant) |
 | nom | string | Maersk, MSC, CMA CGM, Grimaldi… |
 | nom_api | string | nom normalisé JSONCargo (MAERSK, CMA_CGM…) ; null si non couvert |
+| email | string (nullable) | destinataire de carnet pour la correspondance (PII sous RLS) ; l'adresse effective est figée sur chaque message |
 | prefixes | jsonb | préfixes de conteneur connus |
 | trackable | bool | false pour Grimaldi & non couverts |
 | bareme_surestaries | jsonb | paliers jours → tarif/jour |
@@ -196,6 +197,20 @@ paiement ──> encaissement / honoraire
 
 ### notification
 | journal des envois (push / whatsapp / email / desktop) avec statut |
+
+### message (correspondance armateur — domaine `Correspondance`, ADR-014)
+| id, tenant_id, dossier_id | | fil rattaché au dossier (RLS + FK composites tenant) |
+| armateur_id | uuid? | armateur désigné (FK composite tenant) |
+| auteur_id | uuid? | agent émetteur (hors schéma composite, nullOnDelete) |
+| direction | enum | sortant / entrant (entrant IMAP reporté) |
+| type_demande | enum? | relance surestaries / réclamation / demande BL-DO… |
+| canal | enum | email (whatsapp/sms différés) |
+| destinataire_adresse | string | **snapshot** de l'adresse d'envoi (valeur probante, figée) |
+| objet, corps | string / text | composés par l'agent, validés avant envoi (principe n°5) |
+| statut | enum | en_file / en_cours / envoyé / échec (transition atomique anti double-envoi) |
+| reference_externe, erreur | string? | retour fournisseur / motif d'échec |
+| envoye_at, recu_at | timestamp? | |
+| meta | jsonb | |
 
 ## 10. Paiements (portail)
 

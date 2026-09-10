@@ -27,6 +27,9 @@ use App\Domains\Ingestion\Contracts\ExtracteurDocument;
 use App\Domains\Messagerie\Adapters\ExpediteurFactice;
 use App\Domains\Messagerie\Adapters\ServiceOtpFactice;
 use App\Domains\Messagerie\Contracts\ServiceOtp;
+use App\Domains\Tracking\Adapters\AdaptateurJsonCargo;
+use App\Domains\Tracking\Adapters\AdaptateurTrackingFactice;
+use App\Domains\Tracking\Contracts\FournisseurTracking;
 use App\Domains\Surestaries\Policies\FranchisePolicy;
 use App\Domains\Tenancy\Models\Client;
 use App\Domains\Tenancy\Policies\ClientPolicy;
@@ -61,6 +64,14 @@ final class DomainServiceProvider extends ServiceProvider
         // L'expéditeur factice est un singleton (journal partagé test ↔ code).
         $this->app->singleton(ExpediteurFactice::class);
         $this->app->bind(ServiceOtp::class, static fn ($app): ServiceOtp => $app->make(ServiceOtpFactice::class));
+
+        // Fournisseur de tracking, isolé derrière l'interface (principe n°9).
+        // « factice » par défaut (dev/tests sans clé) ; l'adaptateur factice est
+        // un singleton (état simulé partagé test ↔ code).
+        $this->app->singleton(AdaptateurTrackingFactice::class);
+        $this->app->bind(FournisseurTracking::class, static fn ($app): FournisseurTracking => config('tracking.driver') === 'jsoncargo'
+            ? $app->make(AdaptateurJsonCargo::class)
+            : $app->make(AdaptateurTrackingFactice::class));
     }
 
     public function boot(): void

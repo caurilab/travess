@@ -1,6 +1,7 @@
 <?php
 
 use App\Domains\Surestaries\Console\RafraichirSurestariesCommand;
+use App\Domains\Tracking\Console\PollerTrackingCommand;
 use App\Shared\Http\Middleware\EnsureAutonomeContext;
 use App\Shared\Http\Middleware\EnsureInvitationContext;
 use App\Shared\Http\Middleware\EnsurePortailContext;
@@ -33,5 +34,6 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withCommands([
         RafraichirSurestariesCommand::class,
+        PollerTrackingCommand::class,
     ])
     ->create();

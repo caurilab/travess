@@ -256,6 +256,19 @@
 - **Périmètre reporté** (ADR-014) : entrant IMAP + matching, WhatsApp/SMS réels, pièces jointes, relance auto d'un échec, recherche plein-texte, pagination du fil au-delà de 25.
 - **Tests** : correspondance **14/14**, suite complète **194/194** verte, Pint + Larastan 0.
 
+## Avancement — Backend Tracking conteneur (lot G1, factice)
+
+> Terminé, fusionné sur `main`. Pipeline complet **en mode factice** (déterministe, sans clé ni réseau) : le jour où une clé JSONCargo est prise, il ne restera qu'à écrire l'adaptateur réel derrière le contrat. Conception : `docs/08` (économie) + `docs/09` (contrat JSONCargo).
+
+**Fait et vérifié :**
+- **Fournisseur isolé** (`Contracts\FournisseurTracking`, principe n°9) : `conteneursDepuisBl` (E2), `suivreConteneur` (E1), `resoudreNavireImo` (E6, IMO fiable — principe n°7), `statsQuota` (E10), retours en Data objects neutres. `AdaptateurTrackingFactice` déterministe (cycle en mer→approche→déchargé→enlevé→livré→rendu) ; `AdaptateurJsonCargo` = stub reporté (HTTPS + mapping réel à confirmer). Bascule via `config('tracking.driver')`, défaut `factice`.
+- **Scheduler économe** (`Support\CalculProchainPoll`, pur, promouvable vers shared-core) : rendu→jamais ; franchise active→quotidien ; en mer→hebdo sauf ETA proche ; enlevé/livré hors franchise→+30 j (docs/08 §2.2). Commande `tracking:poller` (horaire) → `PollerTrackingTenant` (ne réveille que les conteneurs échus **et** actifs) → `PollerConteneur` (unité = 1 appel).
+- **Plafond de sécurité** (`GardeQuotaTracking`) : coupe le polling auto à ~90 % du quota mutualisé, alerte interne à 75 %, bascule IMAP/manuel (marqueur `source`) ; **conso par tenant** journalisée (`DecompteConsommationTracking`, `ServiceConsomme::Tracking`).
+- **Pipeline** (`PollerConteneur`, `JobTenantScoped`, en file) : verrou consultatif anti-doublon, snapshot **idempotent** (empreinte de contenu → pas de re-transition/alerte), mapping phase→`StatutConteneur` **autoritatif** (le tracking est factuel, hors principe n°5), report du navire (IMO), puis **recalcul surestaries + alertes** (réutilise `RecalculFranchise` + `GenererAlertes`).
+- **Surface agent** : `POST /conteneurs/{id}/tracking/rafraichir` (202, en file, `throttle:30,1`, refus 429 si quota atteint) + `GET /conteneurs/{id}/tracking`. Le portail expose déjà `parcours` (dernier suivi).
+- **Périmètre reporté** : adaptateur JSONCargo réel (HTTPS + mapping `container_status` + clé mutualisée en `.env`), IMAP réel (ici bascule = marqueur), annuaire armateurs↔codes complet + statut Grimaldi, cap tracking par tenant selon plan, promotion `CalculProchainPoll` → shared-core + test-vectors.
+- **Tests** : tracking **52** (38 unit + 14 feature), suite complète **254/254** verte, Pint + Larastan 0.
+
 ## Questions ouvertes
 
 - Table de correspondance précise `container_status` → statut Travess (à établir sur données réelles).

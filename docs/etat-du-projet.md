@@ -235,6 +235,10 @@
 - **Livré (F11) — onboarding par invitation** : côté agent, bouton « Inviter le client au portail » sur la fiche dossier (`POST /dossiers/{id}/invitations`) qui génère un lien signé (72 h) ; côté public, page d'acceptation `/invitation/:token` (rejoue l'URL signée de l'API → OTP → `POST .../confirmer` → provisionnement du compte + octroi + jeton) qui redirige vers le portail. Lien API→front transformé côté client (la signature voyage dans la query). OTP factice `123456` en dev.
 - **Livré (F12) — surface autonome + assignation** : côté client, « Mes dossiers » scinde désormais *Mes dossiers* (autonomes, `GET/POST /portail/autonome/dossiers`) et *Partagés avec moi* ; fiche autonome éditable (`/autonome/:id`) avec ajout de BL/conteneur (`POST .../bls`, `POST .../bls/{bl}/conteneurs`), parcours, et « Confier à un transitaire » (annuaire opt-in `GET .../annuaire` → `POST .../assignation`). Côté transitaire, écran **Demandes** (`GET /demandes-assignation`, accepter/refuser) — accepter déclenche la migration de propriété (ADR-013). Démo : transitaire rendu visible dans l'annuaire (`annuaire_public`).
 - **Portail : périmètre couvert.** Reste optionnel : correspondance/messages entrants (IMAP), WhatsApp/SMS réels, notifications.
+
+**Consolidation (lot F13, livré) :**
+- **Réglages d'agence** : écran agent (identité + quotas en lecture) avec l'interrupteur d'**opt-in annuaire** (`PUT /agence/annuaire`, gérant uniquement). `TenantResource` expose désormais `type` et `annuaire_public` (+ DTO).
+- **Responsive** : sous 720 px, le shell passe en barre supérieure (nav horizontale), les grilles se replient en une colonne, et les tableaux non enveloppés défilent sur eux-mêmes (jamais de scroll horizontal du corps). Vérifié à 375 px.
 - **Portail client** — surface distincte de la surface agent, non commencée (le socle d'accès backend est livré aux lots 7.x).
 
 ## Avancement — Backend Correspondance armateur (lot F7)

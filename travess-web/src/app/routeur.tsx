@@ -13,6 +13,7 @@ import { Invitation } from '../domaines/portail/Invitation.js';
 import { MesDossiers } from '../domaines/portail/MesDossiers.js';
 import { PortailShell } from '../domaines/portail/PortailShell.js';
 import { Rapports } from '../domaines/rapports/Rapports.js';
+import { Reglages } from '../domaines/reglages/Reglages.js';
 import { Accueil } from '../pages/Accueil.js';
 import { Connexion } from '../pages/Connexion.js';
 import { AppShell } from './AppShell.js';
@@ -55,6 +56,7 @@ function RouteurAgent() {
         <Route path="/demandes" element={<Assignations />} />
         <Route path="/alertes" element={<Alertes />} />
         <Route path="/rapports" element={<Rapports />} />
+        <Route path="/reglages" element={<Reglages />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

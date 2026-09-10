@@ -10,6 +10,7 @@ const NAVIGATION = [
   { vers: '/demandes', libelle: 'Demandes' },
   { vers: '/alertes', libelle: 'Alertes' },
   { vers: '/rapports', libelle: 'Rapports' },
+  { vers: '/reglages', libelle: 'Réglages' },
 ] as const;
 
 export function AppShell() {

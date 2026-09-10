@@ -1027,3 +1027,139 @@
   display: flex;
   gap: var(--tv-espace-3);
 }
+
+/* Réglages + interrupteur */
+.reglages__aide {
+  margin: 0 0 var(--tv-espace-4);
+  font-size: 14px;
+  color: var(--tv-texte-attenue);
+}
+.reglages__note {
+  margin: var(--tv-espace-3) 0 0;
+  font-size: 12px;
+  color: var(--tv-texte-attenue);
+}
+.bascule {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--tv-espace-3);
+  cursor: pointer;
+}
+.bascule input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.bascule__piste {
+  position: relative;
+  width: 42px;
+  height: 24px;
+  border-radius: var(--tv-rayon-pilule);
+  background: var(--tv-neutre-300);
+  transition: background 0.15s ease;
+  flex-shrink: 0;
+}
+.bascule__piste::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.15s ease;
+}
+.bascule input:checked + .bascule__piste {
+  background: var(--tv-primaire);
+}
+.bascule input:checked + .bascule__piste::after {
+  transform: translateX(18px);
+}
+.bascule input:disabled + .bascule__piste {
+  opacity: 0.5;
+}
+.bascule__texte {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* Responsive : sous 720px, le shell passe en barre supérieure */
+@media (max-width: 720px) {
+  .shell {
+    grid-template-columns: 1fr;
+    min-height: 100%;
+  }
+  .shell__nav {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--tv-espace-3);
+    border-right: none;
+    border-bottom: 1px solid var(--tv-bordure);
+    padding: var(--tv-espace-3) var(--tv-espace-4);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .shell__marque {
+    font-size: 18px;
+    margin-right: auto;
+  }
+  .portail__badge {
+    margin: 0;
+    order: 3;
+    width: 100%;
+  }
+  .shell__liens {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: var(--tv-espace-2);
+    flex: 1 1 100%;
+    order: 4;
+  }
+  .shell__lien {
+    padding: var(--tv-espace-2);
+    font-size: 13px;
+  }
+  .shell__pied {
+    flex-direction: row;
+    align-items: center;
+    gap: var(--tv-espace-3);
+    border-top: none;
+    padding-top: 0;
+    margin-left: auto;
+  }
+  .shell__pied .tv-bouton {
+    width: auto;
+  }
+  .shell__utilisateur,
+  .shell__agence {
+    display: none;
+  }
+  .shell__contenu {
+    padding: var(--tv-espace-4);
+  }
+  .detail__grille,
+  .tb__cartes {
+    grid-template-columns: 1fr;
+  }
+  .rapport__kpis {
+    grid-template-columns: 1fr;
+  }
+  .fiche__onglets {
+    flex-wrap: wrap;
+  }
+  .page__entete {
+    flex-wrap: wrap;
+    gap: var(--tv-espace-3);
+  }
+  /* Sécurité : les tableaux non enveloppés défilent sur eux-mêmes plutôt que
+     d'élargir la page (jamais de scroll horizontal du corps). */
+  .tb__table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+}

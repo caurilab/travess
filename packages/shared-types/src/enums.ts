@@ -85,6 +85,9 @@ export const STATUTS_MESSAGE = ['brouillon', 'en_file', 'en_cours', 'envoye', 'e
 export type StatutMessage = (typeof STATUTS_MESSAGE)[number];
 
 // --- Portail (posture dossier & demandes d'assignation) ---
+export const TYPES_TENANT = ['transitaire', 'client'] as const;
+export type TypeTenant = (typeof TYPES_TENANT)[number];
+
 export const POSTURES_DOSSIER = ['autonome', 'gere_par_transitaire'] as const;
 export type PostureDossier = (typeof POSTURES_DOSSIER)[number];
 

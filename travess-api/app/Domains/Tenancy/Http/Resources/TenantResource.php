@@ -21,10 +21,12 @@ final class TenantResource extends JsonResource
         return [
             'id' => $this->id,
             'nom' => $this->nom,
+            'type' => $this->type->value,
             'plan' => $this->plan->value,
             'statut' => $this->statut->value,
             'quota_ia_mensuel' => $this->quota_ia_mensuel,
             'quota_tracking_mensuel' => $this->quota_tracking_mensuel,
+            'annuaire_public' => (bool) $this->annuaire_public,
         ];
     }
 }

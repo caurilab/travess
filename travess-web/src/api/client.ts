@@ -11,9 +11,12 @@ import { effacerJeton, lireJeton } from './session.js';
  * - le tenant vient du jeton, jamais du client (principe n°3).
  *
  * Base : relative « /api/v1 » sur le web (proxy Vite en dev, reverse-proxy en
- * prod). Le desktop Electron sert le bundle sans proxy : sa couche native
- * injecte `window.travessDesktop.apiBase` (origine absolue de l'API) — le même
- * bundle est réutilisé sans modification (principe n°8).
+ * prod). Les enrobages natifs servent le bundle sans proxy et pointent vers une
+ * origine absolue :
+ *  - Desktop Electron : injectée à l'exécution via `window.travessDesktop.apiBase` ;
+ *  - Mobile Capacitor : figée au build via `VITE_API_ORIGINE` (origine réseau,
+ *    ex. https://api.travess.ci).
+ * Le même bundle est réutilisé sans modification (principes n°8/9).
  */
 declare global {
   interface Window {
@@ -21,11 +24,20 @@ declare global {
   }
 }
 
-const ORIGINE_API =
-  typeof window !== 'undefined' && typeof window.travessDesktop?.apiBase === 'string'
-    ? window.travessDesktop.apiBase.replace(/\/+$/, '')
-    : '';
-const BASE = `${ORIGINE_API}/api/v1`;
+/** Origine absolue de l'API selon la surface ; chaîne vide = base relative (web). */
+function origineApi(): string {
+  if (typeof window !== 'undefined' && typeof window.travessDesktop?.apiBase === 'string') {
+    return window.travessDesktop.apiBase.replace(/\/+$/, '');
+  }
+  const injectee = import.meta.env.VITE_API_ORIGINE;
+  if (typeof injectee === 'string' && injectee !== '') {
+    return injectee.replace(/\/+$/, '');
+  }
+
+  return '';
+}
+
+const BASE = `${origineApi()}/api/v1`;
 
 export class ErreurRequete extends Error {
   constructor(

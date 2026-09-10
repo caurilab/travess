@@ -9,7 +9,7 @@ Travess (transit + vessel) : SaaS multi-tenant pour les transitaires d'Afrique d
 - API : Laravel 13 (PHP 8.3+), Laravel AI SDK, PostgreSQL, Redis, queues.
 - Web & portail : React 19 (React Compiler activé), TypeScript strict.
 - Desktop : Electron réutilisant le bundle web + couche native (SQLite hors-ligne, impression, scan, notifications).
-- Mobile : React Native (natif, distinct).
+- Mobile : Capacitor réutilisant le bundle web + couche native (caméra/scan, notifications). Voir ADR-015 (amende le principe n°8 ; on abandonne React Native).
 - Monorepo : pnpm workspaces + Turborepo. Laravel dans le dépôt mais hors workspaces pnpm.
 
 ## Principes non négociables
@@ -20,7 +20,7 @@ Travess (transit + vessel) : SaaS multi-tenant pour les transitaires d'Afrique d
 5. L'IA propose, l'humain valide — jamais d'écriture automatique depuis l'extraction.
 6. Le tracking respecte le plafond de sécurité (~90 % du quota) et bascule sur IMAP. Jamais de polling aveugle.
 7. Un navire s'identifie par IMO/MMSI, jamais par son nom.
-8. Le desktop réutilise le web ; le mobile est natif et distinct.
+8. Le desktop et le mobile réutilisent le bundle web ; chacun ajoute sa couche native (Electron pour le desktop, Capacitor pour le mobile). Cf. ADR-001 et ADR-015.
 9. Chaque provider externe est isolé derrière une couche d'adaptation dans son domaine.
 
 ## Langue & style

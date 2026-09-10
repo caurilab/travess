@@ -1,0 +1,21 @@
+# Bundle web copié (généré par scripts/preparer-bundle.mjs)
+www/
+
+# Dépendances
+node_modules/
+
+# iOS (généré par `cap add ios` ; Pods et build non versionnés)
+ios/App/Pods/
+ios/App/App/public/
+ios/App/build/
+ios/DerivedData/
+*.xcworkspace/xcuserdata/
+*.xcodeproj/xcuserdata/
+
+# Android (généré par `cap add android`)
+android/app/build/
+android/build/
+android/.gradle/
+android/local.properties
+android/app/src/main/assets/public/
+android/capacitor-cordova-android-plugins/

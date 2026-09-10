@@ -216,7 +216,7 @@
 
 ## Avancement — Frontend transitaire (React) — lots F0 → F7
 
-> Livré et fusionné sur `main`. Surface **agent** (transitaire) en React 19, consommant l'API `/api/v1`. Le portail client (surface distincte) n'est pas commencé.
+> Livré et fusionné sur `main`. Surface **agent** (transitaire) en React 19, consommant l'API `/api/v1`. Lots F0 → F9. Le portail client (surface distincte) n'est pas commencé.
 
 **Fait et vérifié :**
 - **F0 — Socle + connexion/2FA** : scaffold `travess-web`, authentification (login, défi 2FA TOTP, `me`/refresh/logout), shell applicatif (navigation, garde de session).
@@ -225,9 +225,12 @@
 - **F3 — Alertes surestaries** : écran de traitement des alertes (`GET /alertes`, `PATCH /alertes/{id}`).
 - **F4 → F7 — Fiche dossier actionnable, à onglets** : **Parcours**, **Conteneurs**, **Échéances / Douane**, **Documents + IA** (dépôt, lancement d'extraction, validation humaine), **Correspondance** (fil + composer « Demande par mail » : type → brouillon → édition → envoi, badges d'état, invalidation react-query), **Finances**.
 
+**Livré depuis (lots F8, F9, fusionnés sur `main`) :**
+- **F8 — Rapports** : écran d'activité (KPIs dossiers actifs / argent qui brûle / surestaries évitées, répartition par statut et par sens). Nouvel endpoint `GET /dossiers/statistiques` (agrégats tenant-scopés).
+- **F9 — Clients (CRUD) + création de dossier depuis l'UI** : domaine Tenancy doté d'un `ClientController` (`GET/POST /clients`, `GET/PATCH /clients/{id}`), `ClientPolicy`, Actions auditées ; écran Clients (liste filtrable + création) et flux « Nouveau dossier » (sens + sélecteur de client) sur la liste des dossiers. Débloque la boucle cœur de l'app agent.
+
 **Reste à faire côté front :**
-- **Rapports** — écran non commencé.
-- **Clients (CRUD)** — non commencé ; **bloqué par un endpoint backend absent** : `GET/POST /clients` n'existe pas encore côté API (à livrer avant l'écran).
+- **Portail client** — surface distincte non commencée (le backend Portail existe : vue limitée client, surface autonome, onboarding public par invitation). Décision d'architecture front à trancher (app séparée vs section intégrée role-aware).
 - **Portail client** — surface distincte de la surface agent, non commencée (le socle d'accès backend est livré aux lots 7.x).
 
 ## Avancement — Backend Correspondance armateur (lot F7)

@@ -1379,3 +1379,39 @@
 @media (prefers-reduced-motion: reduce) {
   .stepper__etape--actif .stepper__pastille { animation: none; }
 }
+
+/* Progression d'extraction IA (indéterminée) */
+.extraction-progres {
+  margin-top: var(--tv-espace-3);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.extraction-progres__barre {
+  height: 6px;
+  border-radius: var(--tv-rayon-pilule);
+  background: var(--tv-neutre-100);
+  overflow: hidden;
+  position: relative;
+}
+.extraction-progres__glisse {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 40%;
+  border-radius: var(--tv-rayon-pilule);
+  background: linear-gradient(90deg, var(--tv-marque-300, var(--tv-primaire)), var(--tv-primaire));
+  animation: extraction-glisse 1.2s ease-in-out infinite;
+}
+@keyframes extraction-glisse {
+  0% { left: -40%; }
+  100% { left: 100%; }
+}
+.extraction-progres__texte {
+  font-size: 12px;
+  color: var(--tv-texte-attenue);
+}
+@media (prefers-reduced-motion: reduce) {
+  .extraction-progres__glisse { animation-duration: 3s; }
+}

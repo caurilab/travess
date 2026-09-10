@@ -1,6 +1,6 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { TYPES_DOCUMENT, type DossierDTO, type StatutIngestion, type TypeDocument } from '@travess/shared-types';
-import { useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 
 import { BadgeStatut } from '../../ui/BadgeStatut.js';
 import { Bouton } from '../../ui/Bouton.js';
@@ -67,12 +67,38 @@ function LigneDocument({
   readonly onChangement: () => void;
 }) {
   const [voirProposition, setVoirProposition] = useState(false);
+  const [secondes, setSecondes] = useState(0);
   const si = statutIngestion(statut);
+  const enCours = statut === 'en_file';
 
   const extraction = useMutation({
     mutationFn: () => lancerExtraction(documentId),
     onSuccess: onChangement,
   });
+
+  // Ouvre la proposition automatiquement dès que l'extraction aboutit
+  // (transition en_file → extrait, détectée via le rafraîchissement de la fiche).
+  const statutPrecedent = useRef<StatutIngestion>(statut);
+  useEffect(() => {
+    if (statutPrecedent.current === 'en_file' && statut === 'extrait') {
+      setVoirProposition(true);
+    }
+    statutPrecedent.current = statut;
+  }, [statut]);
+
+  // Chronomètre d'attente (feedback pendant l'analyse IA).
+  const debut = useRef<number>(Date.now());
+  useEffect(() => {
+    if (!enCours) {
+      setSecondes(0);
+
+      return;
+    }
+    debut.current = Date.now();
+    const t = window.setInterval(() => setSecondes(Math.round((Date.now() - debut.current) / 1000)), 500);
+
+    return () => window.clearInterval(t);
+  }, [enCours, documentId]);
 
   return (
     <div className="doc">
@@ -95,6 +121,18 @@ function LigneDocument({
           ) : null}
         </div>
       </div>
+
+      {enCours ? (
+        <div className="extraction-progres" role="status" aria-live="polite">
+          <div className="extraction-progres__barre">
+            <span className="extraction-progres__glisse" />
+          </div>
+          <span className="extraction-progres__texte">
+            Analyse du document par l'IA… <strong className="tv-tabulaire">{secondes} s</strong>
+          </span>
+        </div>
+      ) : null}
+
       {voirProposition ? <PropositionExtraction documentId={documentId} onValide={onChangement} /> : null}
     </div>
   );

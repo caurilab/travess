@@ -42,6 +42,13 @@ export function DetailDossier() {
   const dossier = useQuery({
     queryKey: ['dossier', id],
     queryFn: ({ signal }) => chargerDossier(id, signal),
+    // Tant qu'une extraction est en cours, on rafraîchit la fiche périodiquement
+    // pour que la progression s'actualise et bascule seule à l'aboutissement.
+    refetchInterval: (query) =>
+      (query.state.data?.documents ?? []).some((d) => d.statut_ingestion === 'en_file') ? 2500 : false,
+    // On continue de sonder même si l'onglet n'a pas le focus : l'agent lance
+    // l'extraction puis passe souvent à autre chose pendant l'analyse IA.
+    refetchIntervalInBackground: true,
   });
 
   const rafraichir = () => {

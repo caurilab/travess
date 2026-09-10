@@ -9,8 +9,23 @@ import { effacerJeton, lireJeton } from './session.js';
  * - jeton Bearer attaché automatiquement ;
  * - déballe l'enveloppe { data } ; lève ErreurRequete sur statut non 2xx ;
  * - le tenant vient du jeton, jamais du client (principe n°3).
+ *
+ * Base : relative « /api/v1 » sur le web (proxy Vite en dev, reverse-proxy en
+ * prod). Le desktop Electron sert le bundle sans proxy : sa couche native
+ * injecte `window.travessDesktop.apiBase` (origine absolue de l'API) — le même
+ * bundle est réutilisé sans modification (principe n°8).
  */
-const BASE = '/api/v1';
+declare global {
+  interface Window {
+    readonly travessDesktop?: { readonly apiBase?: string };
+  }
+}
+
+const ORIGINE_API =
+  typeof window !== 'undefined' && typeof window.travessDesktop?.apiBase === 'string'
+    ? window.travessDesktop.apiBase.replace(/\/+$/, '')
+    : '';
+const BASE = `${ORIGINE_API}/api/v1`;
 
 export class ErreurRequete extends Error {
   constructor(

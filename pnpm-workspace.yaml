@@ -4,8 +4,11 @@ packages:
   - "travess-desktop"
   - "packages/*"
 
-# Autorise esbuild (tsup/vitest/vite) à exécuter son script d'installation.
+# Autorise esbuild (tsup/vitest/vite) et electron à exécuter leur script
+# d'installation (electron télécharge son binaire au postinstall).
 allowBuilds:
+  electron: true
   esbuild: true
 onlyBuiltDependencies:
   - esbuild
+  - electron

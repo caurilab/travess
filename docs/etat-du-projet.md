@@ -269,6 +269,20 @@
 - **Périmètre reporté** : adaptateur JSONCargo réel (HTTPS + mapping `container_status` + clé mutualisée en `.env`), IMAP réel (ici bascule = marqueur), annuaire armateurs↔codes complet + statut Grimaldi, cap tracking par tenant selon plan, promotion `CalculProchainPoll` → shared-core + test-vectors.
 - **Tests** : tracking **52** (38 unit + 14 feature), suite complète **254/254** verte, Pint + Larastan 0.
 
+## Avancement — Desktop Electron (lot D1)
+
+> Première coquille, fusionnée sur `main`. Principe n°8 : le desktop RÉUTILISE le bundle web, il ne le réécrit pas.
+
+**Fait :**
+- Paquet `travess-desktop` (Electron 33, TS) : `src/main.ts` (`BrowserWindow` — en dev charge le serveur Vite de `travess-web` ; en prod chargera le bundle statique `travess-web/dist`), `src/preload.ts` (pont `contextBridge` sécurisé, `contextIsolation` + `sandbox`, exposant `window.travessDesktop` — point d'entrée des futures capacités natives).
+- Le client API du web accepte désormais une **base API absolue injectée** (`window.travessDesktop.apiBase`) tout en gardant `/api/v1` relatif pour le web : **le même bundle** sert web et desktop, sans fork.
+- pnpm : postinstall d'Electron autorisé (`allowBuilds` + `onlyBuiltDependencies`).
+- Vérifié : compile (`tsc`), démarre proprement contre le serveur de dev (fenêtre native).
+
+**Reste à faire (desktop) :** packaging (electron-builder, chargement `file://` du bundle + CORS API), et la couche native (SQLite hors-ligne, impression, scan, notifications) exposée une par une via le preload.
+
+**Note d'environnement :** l'extraction du binaire Electron par pnpm/extract-zip peut échouer (dist tronquée) ; contournement local : `unzip` le zip du cache `~/Library/Caches/electron` dans `node_modules/.pnpm/electron@*/node_modules/electron/dist` puis écrire `path.txt` = `Electron.app/Contents/MacOS/Electron`.
+
 ## Questions ouvertes
 
 - Table de correspondance précise `container_status` → statut Travess (à établir sur données réelles).

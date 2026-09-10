@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
+use App\Domains\Alertes\Models\Alerte;
 use App\Domains\Armateurs\Models\Armateur;
 use App\Domains\Conteneurs\Models\Bl;
 use App\Domains\Conteneurs\Models\Conteneur;
@@ -44,6 +45,8 @@ final class DemoSeeder extends Seeder
 
         app(TenantContext::class)->pour($tenant->id, function (): void {
             if (Franchise::query()->exists()) {
+                $this->semerAlertes();
+
                 return;
             }
 
@@ -81,6 +84,30 @@ final class DemoSeeder extends Seeder
                     'montant_menacant' => $menacant,
                 ]);
             }
+
+            $this->semerAlertes();
         });
+    }
+
+    private function semerAlertes(): void
+    {
+        if (Alerte::query()->exists()) {
+            return;
+        }
+
+        $conteneurs = Conteneur::query()->with('bl')->limit(3)->get();
+        $types = ['surestaries_j0', 'surestaries_j1', 'detention_j3'];
+        $statuts = ['ouverte', 'ouverte', 'vue'];
+
+        foreach ($conteneurs as $i => $conteneur) {
+            Alerte::query()->create([
+                'dossier_id' => $conteneur->bl->dossier_id,
+                'conteneur_id' => $conteneur->id,
+                'type' => $types[$i] ?? 'surestaries_j1',
+                'montant_menacant' => 850_000 - $i * 120_000,
+                'statut' => $statuts[$i] ?? 'ouverte',
+                'canaux_envoyes' => ['email'],
+            ]);
+        }
     }
 }

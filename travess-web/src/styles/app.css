@@ -406,3 +406,22 @@
   padding-left: var(--tv-espace-4);
   font-size: 14px;
 }
+
+/* Alertes */
+.alertes__actions {
+  display: flex;
+  gap: var(--tv-espace-2);
+  justify-content: flex-end;
+}
+.alertes__actions .tv-bouton {
+  height: 32px;
+  font-size: 13px;
+  padding: 0 var(--tv-espace-3);
+}
+.alertes__actions-col {
+  text-align: right;
+}
+.alertes__lien {
+  font-weight: 600;
+  font-size: 13px;
+}

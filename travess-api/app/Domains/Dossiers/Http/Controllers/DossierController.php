@@ -62,6 +62,48 @@ final class DossierController
         return DossierResource::make($dossier)->response()->setStatusCode(201);
     }
 
+    /**
+     * GET /dossiers/statistiques — agrégats d'activité tenant-scopés (RLS +
+     * TenantScope) pour l'écran Rapports : volumes par statut et par sens.
+     */
+    public function statistiques(): JsonResponse
+    {
+        Gate::authorize('viewAny', Dossier::class);
+
+        $parStatut = Dossier::query()
+            ->selectRaw('statut, count(*) as n')
+            ->groupBy('statut')
+            ->pluck('n', 'statut');
+
+        $parSens = Dossier::query()
+            ->selectRaw('sens, count(*) as n')
+            ->groupBy('sens')
+            ->pluck('n', 'sens');
+
+        $statuts = ['ouvert', 'en_cours', 'bloque', 'cloture'];
+        $sens = ['import', 'export'];
+
+        $parStatutComplet = [];
+        foreach ($statuts as $s) {
+            $parStatutComplet[$s] = (int) ($parStatut[$s] ?? 0);
+        }
+        $parSensComplet = [];
+        foreach ($sens as $s) {
+            $parSensComplet[$s] = (int) ($parSens[$s] ?? 0);
+        }
+
+        $total = array_sum($parStatutComplet);
+
+        return response()->json([
+            'data' => [
+                'total' => $total,
+                'actifs' => $total - $parStatutComplet['cloture'],
+                'par_statut' => $parStatutComplet,
+                'par_sens' => $parSensComplet,
+            ],
+        ]);
+    }
+
     public function show(Dossier $dossier): DossierResource
     {
         Gate::authorize('view', $dossier);

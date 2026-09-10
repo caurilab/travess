@@ -7,6 +7,7 @@ const NAVIGATION = [
   { vers: '/', libelle: 'Tableau de bord', exact: true },
   { vers: '/dossiers', libelle: 'Dossiers' },
   { vers: '/alertes', libelle: 'Alertes' },
+  { vers: '/rapports', libelle: 'Rapports' },
 ] as const;
 
 export function AppShell() {

@@ -15,6 +15,7 @@ export * from './conteneur.js';
 export * from './document.js';
 export * from './franchise.js';
 export * from './message.js';
+export * from './rapport.js';
 export * from './alerte.js';
 export * from './dashboard.js';
 export * from './audit.js';

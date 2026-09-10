@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Dossiers;
 
+use App\Domains\Dossiers\Models\Dossier;
 use App\Domains\Identity\Enums\RoleUtilisateur;
 use App\Domains\Identity\Models\User;
 use App\Domains\Tenancy\Models\Client;
@@ -173,5 +174,51 @@ final class DossierTest extends TestCase
 
         $this->getJson('/api/v1/dossiers')->assertOk();
         $this->postJson('/api/v1/dossiers', ['sens' => 'import', 'client_id' => $client->id])->assertForbidden();
+    }
+
+    public function test_statistiques_agrege_par_statut_et_par_sens(): void
+    {
+        [$tenant, $gerant, $client] = $this->tenantGerantClient();
+
+        $this->pourTenant($tenant, function () use ($client): void {
+            Dossier::factory()->create(['client_id' => $client->id, 'sens' => 'import', 'statut' => 'ouvert']);
+            Dossier::factory()->create(['client_id' => $client->id, 'sens' => 'import', 'statut' => 'en_cours']);
+            Dossier::factory()->create(['client_id' => $client->id, 'sens' => 'export', 'statut' => 'bloque']);
+            Dossier::factory()->create(['client_id' => $client->id, 'sens' => 'export', 'statut' => 'cloture']);
+        });
+
+        Sanctum::actingAs($gerant);
+
+        $this->getJson('/api/v1/dossiers/statistiques')
+            ->assertOk()
+            ->assertJsonPath('data.total', 4)
+            ->assertJsonPath('data.actifs', 3) // total - clôturés
+            ->assertJsonPath('data.par_statut.ouvert', 1)
+            ->assertJsonPath('data.par_statut.en_cours', 1)
+            ->assertJsonPath('data.par_statut.bloque', 1)
+            ->assertJsonPath('data.par_statut.cloture', 1)
+            ->assertJsonPath('data.par_sens.import', 2)
+            ->assertJsonPath('data.par_sens.export', 2);
+    }
+
+    public function test_statistiques_sont_isolees_par_tenant(): void
+    {
+        [$tenantA, $gerantA, $clientA] = $this->tenantGerantClient();
+        $this->pourTenant($tenantA, fn () => Dossier::factory()->create(['client_id' => $clientA->id, 'sens' => 'import', 'statut' => 'ouvert']));
+
+        [$tenantB, , $clientB] = $this->tenantGerantClient();
+        $this->pourTenant($tenantB, function () use ($clientB): void {
+            Dossier::factory()->create(['client_id' => $clientB->id, 'sens' => 'export', 'statut' => 'ouvert']);
+            Dossier::factory()->create(['client_id' => $clientB->id, 'sens' => 'export', 'statut' => 'ouvert']);
+        });
+
+        Sanctum::actingAs($gerantA);
+
+        // L'acteur du tenant A ne compte que SON dossier (RLS + TenantScope).
+        $this->getJson('/api/v1/dossiers/statistiques')
+            ->assertOk()
+            ->assertJsonPath('data.total', 1)
+            ->assertJsonPath('data.par_sens.import', 1)
+            ->assertJsonPath('data.par_sens.export', 0);
     }
 }

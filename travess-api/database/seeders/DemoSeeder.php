@@ -53,6 +53,7 @@ final class DemoSeeder extends Seeder
             if (Franchise::query()->exists()) {
                 $this->semerEtapes();
                 $this->semerAlertes();
+                $this->semerDossiersVaries();
 
                 return;
             }
@@ -93,7 +94,40 @@ final class DemoSeeder extends Seeder
             }
 
             $this->semerAlertes();
+            $this->semerDossiersVaries();
         });
+    }
+
+    /**
+     * Quelques dossiers supplémentaires (statuts et sens variés) pour donner du
+     * relief à la liste et à l'écran Rapports. Idempotent : ne s'exécute qu'une
+     * fois (tant qu'il n'y a que le dossier principal).
+     */
+    private function semerDossiersVaries(): void
+    {
+        if (Dossier::query()->count() > 1) {
+            return;
+        }
+
+        $client = Client::query()->first() ?? Client::factory()->create(['nom' => 'Négoce Ouest SARL']);
+
+        $modeles = [
+            ['IMP-2026-0002', 'import', 'ouvert'],
+            ['EXP-2026-0007', 'export', 'en_cours'],
+            ['IMP-2026-0003', 'import', 'en_cours'],
+            ['EXP-2026-0008', 'export', 'cloture'],
+            ['IMP-2026-0004', 'import', 'cloture'],
+            ['IMP-2026-0005', 'import', 'ouvert'],
+        ];
+
+        foreach ($modeles as [$reference, $sens, $statut]) {
+            Dossier::factory()->create([
+                'client_id' => $client->id,
+                'sens' => $sens,
+                'statut' => $statut,
+                'reference' => $reference,
+            ]);
+        }
     }
 
     private function semerEtapes(): void

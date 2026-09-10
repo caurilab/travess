@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth:sanctum', 'tenant'])->group(function (): void {
     Route::get('dossiers', [DossierController::class, 'index']);
+    // Avant la route paramétrée {dossier}, sinon « statistiques » serait capturé.
+    Route::get('dossiers/statistiques', [DossierController::class, 'statistiques']);
     Route::post('dossiers', [DossierController::class, 'store']);
     Route::get('dossiers/{dossier}', [DossierController::class, 'show']);
     Route::patch('dossiers/{dossier}', [DossierController::class, 'update']);

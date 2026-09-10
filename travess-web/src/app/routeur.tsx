@@ -5,6 +5,7 @@ import { useAuth } from '../auth/AuthProvider.js';
 import { Alertes } from '../domaines/alertes/Alertes.js';
 import { DetailDossier } from '../domaines/dossiers/DetailDossier.js';
 import { ListeDossiers } from '../domaines/dossiers/ListeDossiers.js';
+import { Rapports } from '../domaines/rapports/Rapports.js';
 import { Accueil } from '../pages/Accueil.js';
 import { Connexion } from '../pages/Connexion.js';
 import { AppShell } from './AppShell.js';
@@ -45,6 +46,7 @@ export function Routeur() {
         <Route path="/dossiers" element={<ListeDossiers />} />
         <Route path="/dossiers/:id" element={<DetailDossier />} />
         <Route path="/alertes" element={<Alertes />} />
+        <Route path="/rapports" element={<Rapports />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

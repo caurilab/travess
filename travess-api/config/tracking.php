@@ -20,8 +20,10 @@ return [
     'driver' => env('TRACKING_DRIVER', 'factice'),
 
     // Base URL du fournisseur réel — à CONFIRMER en HTTPS avant d'envoyer la clé
-    // (la doc JSONCargo la montre en HTTP). Clé dans .env (JSONCARGO_API_KEY).
+    // (la doc JSONCargo la montre en HTTP). Clé mutualisée dans .env, jamais dans
+    // le dépôt, jamais journalisée, jamais recopiée dans un snapshot.
     'base_url' => env('JSONCARGO_BASE_URL'),
+    'api_key' => env('JSONCARGO_API_KEY'),
 
     // Plafond de sécurité (fraction du quota mutualisé). Au-delà de la coupure :
     // polling auto arrêté, bascule IMAP/manuel. Alerte interne avant.

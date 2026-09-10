@@ -6,6 +6,7 @@ import { Bouton } from '../ui/Bouton.js';
 const NAVIGATION = [
   { vers: '/', libelle: 'Tableau de bord', exact: true },
   { vers: '/dossiers', libelle: 'Dossiers' },
+  { vers: '/clients', libelle: 'Clients' },
   { vers: '/alertes', libelle: 'Alertes' },
   { vers: '/rapports', libelle: 'Rapports' },
 ] as const;

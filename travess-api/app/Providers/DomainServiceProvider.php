@@ -28,6 +28,8 @@ use App\Domains\Messagerie\Adapters\ExpediteurFactice;
 use App\Domains\Messagerie\Adapters\ServiceOtpFactice;
 use App\Domains\Messagerie\Contracts\ServiceOtp;
 use App\Domains\Surestaries\Policies\FranchisePolicy;
+use App\Domains\Tenancy\Models\Client;
+use App\Domains\Tenancy\Policies\ClientPolicy;
 use App\Shared\Context\TenantContext;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
@@ -74,5 +76,6 @@ final class DomainServiceProvider extends ServiceProvider
         Gate::policy(Franchise::class, FranchisePolicy::class);
         Gate::policy(Alerte::class, AlertePolicy::class);
         Gate::policy(Message::class, MessagePolicy::class);
+        Gate::policy(Client::class, ClientPolicy::class);
     }
 }

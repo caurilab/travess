@@ -9,4 +9,15 @@ export interface ClientDTO {
     readonly email?: string;
     readonly whatsapp?: string;
   };
+  readonly est_self: boolean;
+}
+
+/** Corps de POST /clients (et PATCH partiel). */
+export interface CreerClientPayload {
+  readonly nom: string;
+  readonly contact?: string | null;
+  readonly canaux?: {
+    readonly email?: string;
+    readonly whatsapp?: string;
+  };
 }

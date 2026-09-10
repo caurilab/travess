@@ -908,3 +908,15 @@
 @media (max-width: 900px) {
   .rapport__kpis { grid-template-columns: 1fr; }
 }
+
+/* Nouveau dossier & clients */
+.nouveau-dossier {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--tv-espace-3);
+}
+.clients__canaux {
+  font-size: 13px;
+  color: var(--tv-texte-attenue);
+}

@@ -1,4 +1,4 @@
-import type { DossierDTO } from '@travess/shared-types';
+import type { CreerDossierPayload, DossierDTO } from '@travess/shared-types';
 
 import { api } from '../../api/client.js';
 
@@ -17,6 +17,10 @@ export function listerDossiers(filtres: FiltresDossiers, signal?: AbortSignal): 
 
 export function chargerDossier(id: string, signal?: AbortSignal): Promise<DossierDTO> {
   return api.get<DossierDTO>(`/dossiers/${id}`, signal);
+}
+
+export function creerDossier(payload: CreerDossierPayload): Promise<DossierDTO> {
+  return api.post<DossierDTO>('/dossiers', payload);
 }
 
 import type { EtapeDTO } from '@travess/shared-types';

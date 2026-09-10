@@ -23,6 +23,7 @@ final class ClientResource extends JsonResource
             'nom' => $this->nom,
             'contact' => $this->contact,
             'canaux' => $this->canaux,
+            'est_self' => (bool) $this->est_self,
         ];
     }
 }

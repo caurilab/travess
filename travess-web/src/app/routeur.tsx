@@ -3,6 +3,7 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 
 import { useAuth } from '../auth/AuthProvider.js';
 import { Alertes } from '../domaines/alertes/Alertes.js';
+import { Clients } from '../domaines/clients/Clients.js';
 import { DetailDossier } from '../domaines/dossiers/DetailDossier.js';
 import { ListeDossiers } from '../domaines/dossiers/ListeDossiers.js';
 import { Rapports } from '../domaines/rapports/Rapports.js';
@@ -45,6 +46,7 @@ export function Routeur() {
         <Route path="/" element={<Accueil />} />
         <Route path="/dossiers" element={<ListeDossiers />} />
         <Route path="/dossiers/:id" element={<DetailDossier />} />
+        <Route path="/clients" element={<Clients />} />
         <Route path="/alertes" element={<Alertes />} />
         <Route path="/rapports" element={<Rapports />} />
       </Route>

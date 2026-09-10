@@ -45,6 +45,7 @@ final class DemoSeeder extends Seeder
 
         app(TenantContext::class)->pour($tenant->id, function (): void {
             if (Franchise::query()->exists()) {
+                $this->semerEtapes();
                 $this->semerAlertes();
 
                 return;
@@ -87,6 +88,38 @@ final class DemoSeeder extends Seeder
 
             $this->semerAlertes();
         });
+    }
+
+    private function semerEtapes(): void
+    {
+        if (\App\Domains\Dossiers\Models\Etape::query()->exists()) {
+            return;
+        }
+
+        $dossier = Dossier::query()->first();
+        if ($dossier === null) {
+            return;
+        }
+
+        $etapes = [
+            ['Ouverture du dossier', 'fait', -8],
+            ['Réception documents', 'fait', -5],
+            ['Déclaration douane', 'en_cours', 1],
+            ['Enlèvement conteneurs', 'a_faire', 4],
+            ['Livraison client', 'a_faire', 8],
+        ];
+
+        foreach ($etapes as $i => [$libelle, $statut, $dans]) {
+            \App\Domains\Dossiers\Models\Etape::query()->create([
+                'dossier_id' => $dossier->id,
+                'ordre' => $i + 1,
+                'libelle' => $libelle,
+                'sla_jours' => 3,
+                'date_prevue' => now()->addDays($dans)->toDateString(),
+                'date_reelle' => $statut === 'fait' ? now()->addDays($dans)->toDateString() : null,
+                'statut' => $statut,
+            ]);
+        }
     }
 
     private function semerAlertes(): void

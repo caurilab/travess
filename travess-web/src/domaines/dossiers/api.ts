@@ -18,3 +18,13 @@ export function listerDossiers(filtres: FiltresDossiers, signal?: AbortSignal): 
 export function chargerDossier(id: string, signal?: AbortSignal): Promise<DossierDTO> {
   return api.get<DossierDTO>(`/dossiers/${id}`, signal);
 }
+
+import type { EtapeDTO } from '@travess/shared-types';
+
+export function mettreAJourEtape(id: string, statut: string): Promise<EtapeDTO> {
+  return api.patch<EtapeDTO>(`/etapes/${id}`, { statut });
+}
+
+export function cloturerDossier(id: string, motif: string | null): Promise<DossierDTO> {
+  return api.post<DossierDTO>(`/dossiers/${id}/cloturer`, motif !== null && motif !== '' ? { motif } : {});
+}

@@ -43,4 +43,9 @@ return [
         'enleve' => 30,   // enlevé / livré hors franchise : rare
         // rendu : aucun poll (géré en code, prochain_poll_prevu = null)
     ],
+
+    // Surcharge de la table container_status (brut JSONCargo) → phase, à
+    // compléter en observant les valeurs réelles (docs/09 §4). Ex. :
+    // 'gate out full' => 'enleve'. Vide = heuristique par mots-clés + défaut.
+    'mapping_phases' => [],
 ];

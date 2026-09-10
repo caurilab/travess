@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { TYPES_DEMANDE, type DossierDTO, type MessageDTO, type TypeDemande } from '@travess/shared-types';
 import { useState } from 'react';
 
+import { ErreurRequete } from '../../api/client.js';
 import { BadgeStatut } from '../../ui/BadgeStatut.js';
 import { Bouton } from '../../ui/Bouton.js';
 import { Carte } from '../../ui/Carte.js';
@@ -111,9 +112,9 @@ function Composer({
       setSucces(true);
       onEnvoi();
     },
-    onError: () => {
+    onError: (err) => {
       setSucces(false);
-      setErreur("Envoi impossible : renseignez un destinataire (ou l'e-mail de l'armateur) et un contenu.");
+      setErreur(err instanceof ErreurRequete ? err.message : 'Envoi impossible. Réessayez.');
     },
   });
 

@@ -142,6 +142,43 @@ final class MessageApiTest extends TestCase
         $this->pourTenant($c['tenant'], fn () => $this->assertSame(0, Message::count()));
     }
 
+    public function test_adresse_libre_ignoree_quand_un_armateur_est_designe(): void
+    {
+        // B1 : on ne peut pas détourner une demande armateur vers une autre adresse.
+        $c = $this->contexte();
+        Sanctum::actingAs($c['gerant']);
+
+        $reponse = $this->postJson("/api/v1/dossiers/{$c['dossier']->id}/messages", [
+            'canal' => 'email',
+            'armateur_id' => $c['armateur']->id,
+            'destinataire_adresse' => 'exfiltration@evil.test',
+            'objet' => 'Demande',
+            'corps' => 'Bonjour',
+        ])->assertStatus(202);
+
+        // L'adresse libre est ignorée : envoi à l'e-mail de carnet de l'armateur.
+        $this->assertSame('ops@maersk.test', $reponse->json('data.destinataire_adresse'));
+    }
+
+    public function test_un_agent_ne_peut_pas_adresser_hors_carnet(): void
+    {
+        // B1 : sans armateur, l'adresse libre est réservée au gérant.
+        $c = $this->contexte();
+        $agent = User::factory()->pourTenant($c['tenant'])->role(RoleUtilisateur::Agent)->create();
+        Sanctum::actingAs($agent);
+
+        $this->postJson("/api/v1/dossiers/{$c['dossier']->id}/messages", [
+            'canal' => 'email',
+            'destinataire_adresse' => 'agent-libre@ailleurs.test',
+            'objet' => 'Demande',
+            'corps' => 'Bonjour',
+        ])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors('destinataire_adresse');
+
+        $this->pourTenant($c['tenant'], fn () => $this->assertSame(0, Message::count()));
+    }
+
     public function test_liste_filtrable_triee_et_paginee(): void
     {
         $c = $this->contexte();

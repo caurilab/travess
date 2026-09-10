@@ -768,6 +768,15 @@
   overflow: hidden;
   position: relative;
 }
+.fil__corps::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1.6em;
+  background: linear-gradient(to bottom, transparent, var(--tv-surface));
+}
 .fil__erreur {
   margin: var(--tv-espace-2) 0 0;
   font-size: 12px;

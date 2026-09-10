@@ -1,5 +1,16 @@
 import type { TonStatut } from '@travess/ui';
-import type { StatutConteneur, StatutDossier, StatutEtape } from '@travess/shared-types';
+import type {
+  StatutAlerte,
+  StatutConteneur,
+  StatutDossier,
+  StatutEtape,
+  StatutIngestion,
+  StatutMessage,
+  TypeAlerte,
+  TypeDemande,
+  TypeDocument,
+  TypeFranchise,
+} from '@travess/shared-types';
 
 /** Mappe les statuts métier vers un ton + un libellé lisible. */
 
@@ -32,8 +43,6 @@ export function libelleSens(sens: 'import' | 'export'): string {
   return sens === 'import' ? 'Import' : 'Export';
 }
 
-import type { StatutAlerte, TypeAlerte } from '@travess/shared-types';
-
 const ALERTE_STATUT: Record<StatutAlerte, { ton: TonStatut; libelle: string }> = {
   ouverte: { ton: 'risque', libelle: 'Ouverte' },
   vue: { ton: 'encours', libelle: 'Vue' },
@@ -54,8 +63,6 @@ const ALERTE_TYPE: Record<TypeAlerte, { ton: TonStatut; libelle: string }> = {
 export const statutAlerte = (s: StatutAlerte) => ALERTE_STATUT[s];
 export const typeAlerte = (t: TypeAlerte) => ALERTE_TYPE[t];
 
-import type { StatutIngestion, TypeDocument } from '@travess/shared-types';
-
 const INGESTION: Record<StatutIngestion, { ton: TonStatut; libelle: string }> = {
   none: { ton: 'neutre', libelle: 'À traiter' },
   en_file: { ton: 'encours', libelle: 'Extraction en cours' },
@@ -75,16 +82,12 @@ const DOC: Record<TypeDocument, string> = {
 export const statutIngestion = (s: StatutIngestion) => INGESTION[s];
 export const libelleTypeDocument = (t: TypeDocument) => DOC[t];
 
-import type { TypeFranchise } from '@travess/shared-types';
-
 const FRANCHISE: Record<TypeFranchise, string> = {
   surestaries: 'Surestaries',
   detention: 'Détention',
 };
 
 export const libelleTypeFranchise = (t: TypeFranchise) => FRANCHISE[t];
-
-import type { StatutMessage, TypeDemande } from '@travess/shared-types';
 
 const MESSAGE: Record<StatutMessage, { ton: TonStatut; libelle: string }> = {
   brouillon: { ton: 'neutre', libelle: 'Brouillon' },

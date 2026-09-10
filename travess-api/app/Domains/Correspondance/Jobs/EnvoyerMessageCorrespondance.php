@@ -11,8 +11,10 @@ use App\Domains\Messagerie\Data\Destinataire;
 use App\Domains\Messagerie\Data\MessageSortant;
 use App\Domains\Messagerie\Enums\StatutEnvoi;
 use App\Domains\Messagerie\Support\FabriqueExpediteur;
+use App\Shared\Context\TenantContext;
 use App\Shared\Jobs\JobTenantScoped;
 use Illuminate\Support\Carbon;
+use Throwable;
 
 /**
  * Envoie un message de correspondance via l'infra Messagerie (principe n°9),
@@ -72,5 +74,25 @@ final class EnvoyerMessageCorrespondance extends JobTenantScoped
 
         // Trace l'aboutissement réel de l'envoi (défense audit C3).
         app(Auditeur::class)->miseAJour($message, 'correspondance.aboutie', $avant);
+    }
+
+    /**
+     * Filet de sécurité : le verrou en_cours est committé AVANT l'appel réseau,
+     * donc une exception d'envoi (SMTP indisponible…) laisserait le message figé
+     * en « en_cours » — sans erreur, non rejouable (le verrou renvoie 0 au rejeu).
+     * On rebascule en « échec » pour que l'agent voie l'état et puisse recomposer.
+     * S'exécute hors contexte tenant : on le rétablit explicitement.
+     */
+    public function failed(Throwable $e): void
+    {
+        app(TenantContext::class)->pour($this->tenantId, function (): void {
+            Message::query()
+                ->whereKey($this->messageId)
+                ->where('statut', StatutMessage::EnCours->value)
+                ->update([
+                    'statut' => StatutMessage::Echec->value,
+                    'erreur' => "Échec technique de l'envoi. Réessayez.",
+                ]);
+        });
     }
 }

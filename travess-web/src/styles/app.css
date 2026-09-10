@@ -920,3 +920,49 @@
   font-size: 13px;
   color: var(--tv-texte-attenue);
 }
+
+/* Portail client */
+.portail__badge {
+  margin: -8px 0 0;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--tv-primaire);
+}
+.portail__cartes {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--tv-espace-4);
+}
+.portail__carte-lien {
+  text-decoration: none;
+  color: inherit;
+}
+.portail__carte {
+  transition: border-color 0.15s ease;
+}
+.portail__carte-lien:hover .portail__carte {
+  border-color: var(--tv-primaire);
+}
+.portail__carte-tete {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--tv-espace-3);
+  margin-bottom: var(--tv-espace-2);
+}
+.portail__carte-ref {
+  margin: 0;
+  font-weight: 600;
+  font-size: 14px;
+}
+.portail__carte-meta {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--tv-texte-attenue);
+}
+.portail__parcours {
+  font-size: 13px;
+  color: var(--tv-texte-attenue);
+}

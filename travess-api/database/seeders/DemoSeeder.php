@@ -12,6 +12,10 @@ use App\Domains\Conteneurs\Models\Franchise;
 use App\Domains\Dossiers\Models\Dossier;
 use App\Domains\Identity\Enums\RoleUtilisateur;
 use App\Domains\Identity\Models\User;
+use App\Domains\Portail\Enums\NiveauAcces;
+use App\Domains\Portail\Enums\OrigineAcces;
+use App\Domains\Portail\Enums\StatutAcces;
+use App\Domains\Portail\Models\AccesDossier;
 use App\Domains\Tenancy\Models\Client;
 use App\Domains\Tenancy\Models\Tenant;
 use App\Shared\Context\TenantContext;
@@ -95,6 +99,50 @@ final class DemoSeeder extends Seeder
 
             $this->semerAlertes();
             $this->semerDossiersVaries();
+        });
+
+        $this->semerPortailClient($tenant);
+    }
+
+    /**
+     * Compte de démonstration du portail client : un workspace client (tenant
+     * type=client), un utilisateur « client », et un octroi d'accès (vue limitée)
+     * au dossier principal du transitaire. Connexion : client@travess.ci / password.
+     */
+    private function semerPortailClient(Tenant $transitaire): void
+    {
+        if (User::where('email', 'client@travess.ci')->exists()) {
+            return;
+        }
+
+        $workspace = Tenant::firstOrCreate(
+            ['nom' => 'Espace client — Import Sahel'],
+            ['type' => 'client', 'quota_ia_mensuel' => 0, 'quota_tracking_mensuel' => 0],
+        );
+
+        $client = new User([
+            'nom' => 'Import Sahel (client)',
+            'email' => 'client@travess.ci',
+            'role' => RoleUtilisateur::Client->value,
+            'password' => 'password',
+        ]);
+        $client->forceFill(['tenant_id' => $workspace->id])->save();
+
+        app(TenantContext::class)->pour($transitaire->id, function () use ($transitaire, $workspace, $client): void {
+            $dossier = Dossier::query()->where('reference', 'IMP-2026-0001')->first();
+            if ($dossier === null) {
+                return;
+            }
+
+            AccesDossier::factory()->create([
+                'dossier_id' => $dossier->id,
+                'tenant_proprietaire_id' => $transitaire->id,
+                'beneficiaire_user_id' => $client->id,
+                'beneficiaire_tenant_id' => $workspace->id,
+                'niveau' => NiveauAcces::Limite->value,
+                'statut' => StatutAcces::Actif->value,
+                'origine' => OrigineAcces::InvitationTransitaire->value,
+            ]);
         });
     }
 

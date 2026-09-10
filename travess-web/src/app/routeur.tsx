@@ -6,6 +6,9 @@ import { Alertes } from '../domaines/alertes/Alertes.js';
 import { Clients } from '../domaines/clients/Clients.js';
 import { DetailDossier } from '../domaines/dossiers/DetailDossier.js';
 import { ListeDossiers } from '../domaines/dossiers/ListeDossiers.js';
+import { DetailMonDossier } from '../domaines/portail/DetailMonDossier.js';
+import { MesDossiers } from '../domaines/portail/MesDossiers.js';
+import { PortailShell } from '../domaines/portail/PortailShell.js';
 import { Rapports } from '../domaines/rapports/Rapports.js';
 import { Accueil } from '../pages/Accueil.js';
 import { Connexion } from '../pages/Connexion.js';
@@ -27,15 +30,13 @@ function Protege({ children }: { readonly children: ReactNode }) {
   return children;
 }
 
-export function Routeur() {
+/** Surface agent (transitaire). */
+function RouteurAgent() {
   const { statut } = useAuth();
 
   return (
     <Routes>
-      <Route
-        path="/connexion"
-        element={statut === 'connecte' ? <Navigate to="/" replace /> : <Connexion />}
-      />
+      <Route path="/connexion" element={statut === 'connecte' ? <Navigate to="/" replace /> : <Connexion />} />
       <Route
         element={
           <Protege>
@@ -53,4 +54,29 @@ export function Routeur() {
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
+}
+
+/** Surface portail client (vue limitée). */
+function RouteurPortail() {
+  return (
+    <Routes>
+      <Route
+        element={
+          <Protege>
+            <PortailShell />
+          </Protege>
+        }
+      >
+        <Route path="/" element={<MesDossiers />} />
+        <Route path="/dossiers/:id" element={<DetailMonDossier />} />
+      </Route>
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  );
+}
+
+export function Routeur() {
+  const { moi } = useAuth();
+
+  return moi?.user.role === 'client' ? <RouteurPortail /> : <RouteurAgent />;
 }

@@ -229,8 +229,10 @@
 - **F8 — Rapports** : écran d'activité (KPIs dossiers actifs / argent qui brûle / surestaries évitées, répartition par statut et par sens). Nouvel endpoint `GET /dossiers/statistiques` (agrégats tenant-scopés).
 - **F9 — Clients (CRUD) + création de dossier depuis l'UI** : domaine Tenancy doté d'un `ClientController` (`GET/POST /clients`, `GET/PATCH /clients/{id}`), `ClientPolicy`, Actions auditées ; écran Clients (liste filtrable + création) et flux « Nouveau dossier » (sens + sélecteur de client) sur la liste des dossiers. Débloque la boucle cœur de l'app agent.
 
-**Reste à faire côté front :**
-- **Portail client** — surface distincte non commencée (le backend Portail existe : vue limitée client, surface autonome, onboarding public par invitation). Décision d'architecture front à trancher (app séparée vs section intégrée role-aware).
+**Portail client (lot F10, en cours) :**
+- **Décision d'architecture** : section **intégrée role-aware** dans `travess-web` (et non une app séparée) — selon le rôle du compte connecté (`client` vs agent), le routeur rend le `PortailShell` ou l'`AppShell`. Réutilise auth/2FA, client HTTP, tokens de design et composants UI (cohérent avec le principe n°8).
+- **Livré — vue limitée du client (lecture seule)** : « Mes dossiers » (`GET /portail/dossiers`) + fiche limitée (`GET /portail/dossiers/{id}`) projetée en liste blanche (BL + conteneurs + dernier parcours) ; jamais les finances ni le motif de blocage. Compte de démo `client@travess.ci` + octroi `acces_dossier` semés.
+- **Reste à faire portail** : surface autonome (le client crée/gère ses dossiers, demande d'assignation), onboarding public par invitation (URL signée + OTP), demandes d'assignation côté transitaire.
 - **Portail client** — surface distincte de la surface agent, non commencée (le socle d'accès backend est livré aux lots 7.x).
 
 ## Avancement — Backend Correspondance armateur (lot F7)

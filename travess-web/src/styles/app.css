@@ -966,3 +966,44 @@
   font-size: 13px;
   color: var(--tv-texte-attenue);
 }
+
+/* Invitation portail (agent) + onboarding (public) */
+.fiche__inviter {
+  margin-top: calc(-1 * var(--tv-espace-3));
+}
+.inviter__form {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--tv-espace-3);
+  flex-wrap: wrap;
+}
+.inviter__lien {
+  margin-top: var(--tv-espace-4);
+  padding-top: var(--tv-espace-4);
+  border-top: 1px solid var(--tv-bordure);
+  display: flex;
+  flex-direction: column;
+  gap: var(--tv-espace-3);
+  align-items: flex-start;
+}
+.inviter__lien-titre {
+  margin: 0;
+  font-size: 13px;
+  color: var(--tv-texte-attenue);
+}
+.inviter__lien-valeur {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  font-family: var(--tv-police-mono);
+  font-size: 12px;
+  background: var(--tv-neutre-100);
+  padding: var(--tv-espace-3);
+  border-radius: var(--tv-rayon-sm);
+  word-break: break-all;
+}
+.invitation__info {
+  margin: 0 0 var(--tv-espace-2);
+  font-size: 14px;
+  color: var(--tv-texte-attenue);
+}

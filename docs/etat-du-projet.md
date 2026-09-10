@@ -231,8 +231,9 @@
 
 **Portail client (lot F10, en cours) :**
 - **Décision d'architecture** : section **intégrée role-aware** dans `travess-web` (et non une app séparée) — selon le rôle du compte connecté (`client` vs agent), le routeur rend le `PortailShell` ou l'`AppShell`. Réutilise auth/2FA, client HTTP, tokens de design et composants UI (cohérent avec le principe n°8).
-- **Livré — vue limitée du client (lecture seule)** : « Mes dossiers » (`GET /portail/dossiers`) + fiche limitée (`GET /portail/dossiers/{id}`) projetée en liste blanche (BL + conteneurs + dernier parcours) ; jamais les finances ni le motif de blocage. Compte de démo `client@travess.ci` + octroi `acces_dossier` semés.
-- **Reste à faire portail** : surface autonome (le client crée/gère ses dossiers, demande d'assignation), onboarding public par invitation (URL signée + OTP), demandes d'assignation côté transitaire.
+- **Livré (F10) — vue limitée du client (lecture seule)** : « Mes dossiers » (`GET /portail/dossiers`) + fiche limitée (`GET /portail/dossiers/{id}`) projetée en liste blanche (BL + conteneurs + dernier parcours) ; jamais les finances ni le motif de blocage. Compte de démo `client@travess.ci` + octroi `acces_dossier` semés.
+- **Livré (F11) — onboarding par invitation** : côté agent, bouton « Inviter le client au portail » sur la fiche dossier (`POST /dossiers/{id}/invitations`) qui génère un lien signé (72 h) ; côté public, page d'acceptation `/invitation/:token` (rejoue l'URL signée de l'API → OTP → `POST .../confirmer` → provisionnement du compte + octroi + jeton) qui redirige vers le portail. Lien API→front transformé côté client (la signature voyage dans la query). OTP factice `123456` en dev.
+- **Reste à faire portail** : surface autonome (le client crée/gère ses dossiers, demande d'assignation), et la file des demandes d'assignation côté transitaire.
 - **Portail client** — surface distincte de la surface agent, non commencée (le socle d'accès backend est livré aux lots 7.x).
 
 ## Avancement — Backend Correspondance armateur (lot F7)

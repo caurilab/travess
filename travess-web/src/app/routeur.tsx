@@ -7,6 +7,7 @@ import { Clients } from '../domaines/clients/Clients.js';
 import { DetailDossier } from '../domaines/dossiers/DetailDossier.js';
 import { ListeDossiers } from '../domaines/dossiers/ListeDossiers.js';
 import { DetailMonDossier } from '../domaines/portail/DetailMonDossier.js';
+import { Invitation } from '../domaines/portail/Invitation.js';
 import { MesDossiers } from '../domaines/portail/MesDossiers.js';
 import { PortailShell } from '../domaines/portail/PortailShell.js';
 import { Rapports } from '../domaines/rapports/Rapports.js';
@@ -37,6 +38,7 @@ function RouteurAgent() {
   return (
     <Routes>
       <Route path="/connexion" element={statut === 'connecte' ? <Navigate to="/" replace /> : <Connexion />} />
+      <Route path="/invitation/:token" element={<Invitation />} />
       <Route
         element={
           <Protege>
@@ -60,6 +62,7 @@ function RouteurAgent() {
 function RouteurPortail() {
   return (
     <Routes>
+      <Route path="/invitation/:token" element={<Invitation />} />
       <Route
         element={
           <Protege>

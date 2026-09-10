@@ -3,13 +3,16 @@ import { STATUTS_CONTENEUR, STATUTS_ETAPE, TYPES_CONTENEUR, type DossierDTO } fr
 import { useState, type FormEvent } from 'react';
 import { Link, useParams } from 'react-router-dom';
 
+import { ErreurRequete } from '../../api/client.js';
 import { creerConteneur, mettreAJourConteneur } from '../conteneurs/api.js';
 import { OngletCorrespondance } from '../correspondance/OngletCorrespondance.js';
 import { OngletDocuments } from '../documents/OngletDocuments.js';
+import { emettreInvitation, lienFrontInvitation } from '../portail/api.js';
 import { OngletEcheances } from './OngletEcheances.js';
 import { BadgeStatut } from '../../ui/BadgeStatut.js';
 import { Bouton } from '../../ui/Bouton.js';
 import { Carte } from '../../ui/Carte.js';
+import { Champ } from '../../ui/Champ.js';
 import { dateCourte, montant } from '../../lib/format.js';
 import { statutConteneur, statutDossier, statutEtape } from '../../lib/statuts.js';
 import { chargerDossier, cloturerDossier, mettreAJourEtape } from './api.js';
@@ -78,6 +81,8 @@ export function DetailDossier() {
           </Bouton>
         ) : null}
       </div>
+
+      <InviterClient dossierId={d.id} />
 
       {/* En-tête BL (centré sur le connaissement, comme la fiche métier). */}
       <Carte className="fiche__entete">
@@ -318,5 +323,74 @@ function AjouterConteneur({ blId, onAjout }: { readonly blId: string; readonly o
       </Bouton>
       {erreur !== null ? <span className="tv-champ__erreur">{erreur}</span> : null}
     </form>
+  );
+}
+
+function InviterClient({ dossierId }: { readonly dossierId: string }) {
+  const [ouvert, setOuvert] = useState(false);
+  const [email, setEmail] = useState('');
+  const [lien, setLien] = useState<string | null>(null);
+  const [copie, setCopie] = useState(false);
+  const [erreur, setErreur] = useState<string | null>(null);
+
+  const emission = useMutation({
+    mutationFn: () => emettreInvitation(dossierId, { canal: 'email', destinataire: email.trim() }),
+    onSuccess: (r) => {
+      setLien(lienFrontInvitation(r.lien));
+      setErreur(null);
+    },
+    onError: (err) => setErreur(err instanceof ErreurRequete ? err.message : "Émission impossible."),
+  });
+
+  function soumettre(ev: FormEvent) {
+    ev.preventDefault();
+    if (email.trim() === '') return;
+    emission.mutate();
+  }
+
+  if (!ouvert) {
+    return (
+      <div className="fiche__inviter">
+        <Bouton variante="fantome" onClick={() => setOuvert(true)}>
+          Inviter le client au portail
+        </Bouton>
+      </div>
+    );
+  }
+
+  return (
+    <Carte className="inviter">
+      <h2 className="detail__titre-carte">Inviter le client au portail</h2>
+      <form className="inviter__form" onSubmit={soumettre}>
+        <Champ
+          label="E-mail du client"
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
+        <Bouton type="submit" chargement={emission.isPending} disabled={email.trim() === ''}>
+          Générer le lien d'invitation
+        </Bouton>
+        {erreur !== null ? <span className="tv-champ__erreur">{erreur}</span> : null}
+      </form>
+
+      {lien !== null ? (
+        <div className="inviter__lien">
+          <p className="inviter__lien-titre">Lien d'accès (valable 72 h) — un e-mail a aussi été envoyé :</p>
+          <code className="inviter__lien-valeur">{lien}</code>
+          <Bouton
+            variante="secondaire"
+            onClick={() => {
+              void navigator.clipboard?.writeText(lien).then(() => {
+                setCopie(true);
+                window.setTimeout(() => setCopie(false), 2000);
+              });
+            }}
+          >
+            {copie ? 'Copié ✓' : 'Copier le lien'}
+          </Bouton>
+        </div>
+      ) : null}
+    </Carte>
   );
 }

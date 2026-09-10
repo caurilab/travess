@@ -44,8 +44,11 @@ return [
         // rendu : aucun poll (géré en code, prochain_poll_prevu = null)
     ],
 
-    // Surcharge de la table container_status (brut JSONCargo) → phase, à
-    // compléter en observant les valeurs réelles (docs/09 §4). Ex. :
-    // 'gate out full' => 'enleve'. Vide = heuristique par mots-clés + défaut.
-    'mapping_phases' => [],
+    // Table container_status (brut JSONCargo, en minuscules) → phase, à enrichir
+    // en observant les valeurs réelles (docs/09 §4). Ce qui n'est pas listé passe
+    // par l'heuristique par mots-clés, puis défaut prudent « en_mer ».
+    // Valeurs déjà observées (MSC) :
+    'mapping_phases' => [
+        'export loaded on vessel' => 'en_mer',
+    ],
 ];

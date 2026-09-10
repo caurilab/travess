@@ -26,27 +26,26 @@ final class AdaptateurJsonCargo implements FournisseurTracking
 {
     public function conteneursDepuisBl(string $numeroBl, string $armateurApi): array
     {
-        // E2 — numéros de conteneur d'un BL (inversion de saisie).
-        $reponse = $this->client()
-            ->get("containers/bol/{$numeroBl}", ['shipping_line' => $armateurApi])
-            ->throw()
-            ->json();
+        // E2 — numéros de conteneur d'un BL (inversion de saisie). Slash final :
+        // sans lui l'API redirige (301).
+        $d = $this->donnees(
+            $this->client()->get("containers/bol/{$numeroBl}/", ['shipping_line' => $armateurApi])->throw()->json()
+        );
 
-        $numeros = $reponse['associated_container_numbers'] ?? [];
+        $numeros = $d['associated_container_numbers'] ?? $d;
 
         return array_values(array_filter(array_map('strval', is_array($numeros) ? $numeros : [])));
     }
 
     public function suivreConteneur(string $numero, string $armateurApi): SuiviConteneurData
     {
-        // E1 — détails d'un conteneur.
-        $c = $this->client()
-            ->get("containers/{$numero}", ['shipping_line' => $armateurApi])
-            ->throw()
-            ->json();
+        // E1 — détails d'un conteneur (slash final obligatoire).
+        $c = $this->donnees(
+            $this->client()->get("containers/{$numero}/", ['shipping_line' => $armateurApi])->throw()->json()
+        );
 
-        if (! is_array($c)) {
-            throw new RuntimeException('Réponse JSONCargo inattendue pour le conteneur.');
+        if ($c === []) {
+            throw new RuntimeException('Réponse JSONCargo vide pour le conteneur.');
         }
 
         $statutBrut = (string) ($c['container_status'] ?? '');
@@ -69,9 +68,7 @@ final class AdaptateurJsonCargo implements FournisseurTracking
     {
         // E6 — vessel finder. Peut renvoyer plusieurs navires de même nom : on
         // s'appuie sur l'IMO (principe n°7). On prend la 1re fiche exploitable.
-        $reponse = $this->client()->get("vessels/finder/{$imoOuNom}")->throw()->json();
-
-        $fiche = $this->premiereFiche($reponse);
+        $fiche = $this->premiereFiche($this->donnees($this->client()->get("vessels/finder/{$imoOuNom}/")->throw()->json()));
 
         $imo = $this->texte($fiche['imo'] ?? null);
         if ($imo === null) {
@@ -88,7 +85,7 @@ final class AdaptateurJsonCargo implements FournisseurTracking
     public function statsQuota(): StatsQuotaData
     {
         // E10 — statistiques de la clé (pilotage du plafond).
-        $s = $this->client()->get('api_key/stats')->throw()->json();
+        $s = $this->donnees($this->client()->get('api_key/stats')->throw()->json());
 
         return new StatsQuotaData(
             plan: (string) ($s['plan'] ?? 'inconnu'),
@@ -151,6 +148,22 @@ final class AdaptateurJsonCargo implements FournisseurTracking
         }
 
         return $phase;
+    }
+
+    /**
+     * Déballe l'enveloppe { "data": ... } de JSONCargo. Renvoie [] si vide.
+     *
+     * @return array<int|string, mixed>
+     */
+    private function donnees(mixed $reponse): array
+    {
+        if (! is_array($reponse)) {
+            return [];
+        }
+
+        $contenu = $reponse['data'] ?? $reponse;
+
+        return is_array($contenu) ? $contenu : [];
     }
 
     /**
